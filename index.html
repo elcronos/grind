@@ -1729,7 +1729,7 @@ async function runChallenge(ch, key, editor, consoleEl, consoleBody, runBtn) {
       <span class="case-icon ${r.passed ? 'case-pass' : 'case-fail'}">${r.passed ? '✓' : '✗'}</span>
       <div>
         <div><span style="color:var(--ink-dim)">case ${r.idx}:</span> <code style="color:var(--ink)">${escapeHtml(argsStr)}</code></div>
-        <div class="case-detail">expected <code style="color:var(--acc)">${escapeHtml(formatVal(r.expected))}</code>${!r.passed ? ` · got <code style="color:var(--acc-2)">${escapeHtml(formatVal(r.got))}</code>` : ''}</div>
+        <div class="case-detail">expected <code style="color:var(--acc)">${escapeHtml(formatVal(r.expected))}</code> · got <code style="color:var(--acc-2)">${escapeHtml(formatVal(r.got))}</code></div>
       </div>
       <span class="case-detail">${r.passed ? 'pass' : 'fail'}</span>
     </div>`;
