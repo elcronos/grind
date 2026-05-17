@@ -362,6 +362,56 @@
   .hints code {
     color: var(--acc-2);
   }
+  .solutions-panel {
+    margin-top: 14px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--bg-3);
+    overflow: hidden;
+  }
+  .solutions-tabs {
+    display: flex;
+    gap: 0;
+    background: #060906;
+    border-bottom: 1px solid var(--line);
+  }
+  .sol-tab {
+    background: transparent;
+    color: var(--ink-dim);
+    border: 0;
+    border-right: 1px solid var(--line);
+    padding: 10px 16px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+  }
+  .sol-tab.active {
+    color: var(--acc);
+    background: var(--bg-3);
+    box-shadow: inset 0 -2px 0 var(--acc);
+  }
+  .sol-body { display: none; padding: 14px; }
+  .sol-body.active { display: block; }
+  .sol-note {
+    color: var(--ink-dim);
+    font-size: 13px;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    border-left: 2px solid var(--acc-3);
+    background: rgba(255,255,255,0.02);
+  }
+  .sol-body pre {
+    margin: 0 0 10px;
+    padding: 12px;
+    background: #060906;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow-x: auto;
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .copy-sol-btn { font-size: 12px; padding: 6px 12px; }
   .editor-wrap {
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -809,6 +859,26 @@ const LESSONS = [
     # track running min price, max profit so far
     pass`,
         fn: 'max_profit',
+        solutions: [
+          { label: 'one pass', note: 'Track min so far, max profit so far. O(n) time, O(1) space.', code: `def max_profit(prices):
+    if not prices:
+        return 0
+    min_price = prices[0]
+    best = 0
+    for p in prices:
+        if p < min_price:
+            min_price = p
+        else:
+            best = max(best, p - min_price)
+    return best` },
+          { label: 'brute force O(n²)', note: 'Educational baseline. Times out on long inputs.', code: `def max_profit(prices):
+    best = 0
+    n = len(prices)
+    for i in range(n):
+        for j in range(i + 1, n):
+            best = max(best, prices[j] - prices[i])
+    return best` },
+        ],
         hints: [
           'You only need one pass through <code>prices</code>.',
           'Track the lowest price seen so far in a variable like <code>min_price</code>.',
@@ -831,6 +901,24 @@ const LESSONS = [
     # write pointer for non-zeros, fill the rest with 0
     pass`,
         fn: 'move_zeros',
+        solutions: [
+          { label: 'two-pointer write', note: 'O(n) time, O(1) extra space. Preserves order.', code: `def move_zeros(nums):
+    write = 0
+    for n in nums:
+        if n != 0:
+            nums[write] = n
+            write += 1
+    for i in range(write, len(nums)):
+        nums[i] = 0
+    return nums` },
+          { label: 'swap in place', note: 'Single pass; swap non-zero into write slot.', code: `def move_zeros(nums):
+    write = 0
+    for i in range(len(nums)):
+        if nums[i] != 0:
+            nums[write], nums[i] = nums[i], nums[write]
+            write += 1
+    return nums` },
+        ],
         hints: [
           'Two pointers: a <code>write</code> index for where the next non-zero goes.',
           'First pass: copy every non-zero value to <code>nums[write]</code> and increment <code>write</code>.',
@@ -945,6 +1033,33 @@ const LESSONS = [
     # grow right, shrink left while sum >= target
     pass`,
         fn: 'min_subarray_len',
+        solutions: [
+          { label: 'sliding window', note: 'O(n). Grow right, shrink left while sum is enough.', code: `def min_subarray_len(target, nums):
+    left = 0
+    total = 0
+    best = float('inf')
+    for right, n in enumerate(nums):
+        total += n
+        while total >= target:
+            best = min(best, right - left + 1)
+            total -= nums[left]
+            left += 1
+    return 0 if best == float('inf') else best` },
+          { label: 'prefix + binary search', note: 'O(n log n). Build prefix sums, binary search for the smallest j with prefix[j] - prefix[i] >= target.', code: `from bisect import bisect_left
+
+def min_subarray_len(target, nums):
+    n = len(nums)
+    prefix = [0]
+    for x in nums:
+        prefix.append(prefix[-1] + x)
+    best = float('inf')
+    for i in range(n):
+        need = prefix[i] + target
+        j = bisect_left(prefix, need)
+        if j <= n:
+            best = min(best, j - i)
+    return 0 if best == float('inf') else best` },
+        ],
         hints: [
           'Use a sliding window with <code>left</code> and <code>right</code> indices and a running <code>window_sum</code>.',
           'Expand by moving <code>right</code> and adding <code>nums[right]</code>.',
@@ -966,6 +1081,31 @@ const LESSONS = [
     # window invariant: zero_count <= k
     pass`,
         fn: 'longest_ones',
+        solutions: [
+          { label: 'sliding window', note: 'Window invariant: at most k zeros inside.', code: `def longest_ones(nums, k):
+    left = 0
+    zeros = 0
+    best = 0
+    for right, n in enumerate(nums):
+        if n == 0:
+            zeros += 1
+        while zeros > k:
+            if nums[left] == 0:
+                zeros -= 1
+            left += 1
+        best = max(best, right - left + 1)
+    return best` },
+          { label: 'never-shrink window', note: 'Trick: only ever grow the window. Final width is the answer when k is fixed.', code: `def longest_ones(nums, k):
+    left = 0
+    for right, n in enumerate(nums):
+        if n == 0:
+            k -= 1
+        if k < 0:
+            if nums[left] == 0:
+                k += 1
+            left += 1
+    return len(nums) - left` },
+        ],
         hints: [
           'Classic growing/shrinking window. Track <code>zero_count</code> inside the window.',
           'Expand <code>right</code>; if <code>nums[right] == 0</code>, increment <code>zero_count</code>.',
@@ -1080,6 +1220,21 @@ sorted(words, key=<span class="tok-kw">lambda</span> w: (len(w), w))
     # classic lower_bound binary search
     pass`,
         fn: 'search_insert',
+        solutions: [
+          { label: 'lower bound', note: 'Half-open [lo, hi). Classic insertion-point binary search.', code: `def search_insert(nums, target):
+    lo, hi = 0, len(nums)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if nums[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo` },
+          { label: 'stdlib', note: 'bisect_left does exactly this.', code: `from bisect import bisect_left
+
+def search_insert(nums, target):
+    return bisect_left(nums, target)` },
+        ],
         hints: [
           'Standard binary search with <code>lo = 0</code>, <code>hi = len(nums)</code> (note: <code>len</code>, not <code>len-1</code>).',
           'Loop while <code>lo &lt; hi</code>. Compute <code>mid = (lo + hi) // 2</code>.',
@@ -1102,6 +1257,28 @@ sorted(words, key=<span class="tok-kw">lambda</span> w: (len(w), w))
     # binary search the largest m where m*m <= x
     pass`,
         fn: 'my_sqrt',
+        solutions: [
+          { label: 'binary search', note: 'Largest m where m*m <= x.', code: `def my_sqrt(x):
+    if x < 2:
+        return x
+    lo, hi = 1, x
+    ans = 0
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if mid * mid <= x:
+            ans = mid
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return ans` },
+          { label: 'Newton iteration', note: "Newton's method converges fast for sqrt. Cast to int at end.", code: `def my_sqrt(x):
+    if x == 0:
+        return 0
+    r = x
+    while r * r > x:
+        r = (r + x // r) // 2
+    return r` },
+        ],
         hints: [
           'Binary search on the answer: range is <code>[0, x]</code>.',
           'For each <code>mid</code>, check <code>mid * mid &lt;= x</code>. If yes, candidate; try larger.',
@@ -1236,6 +1413,27 @@ sorted(words, key=<span class="tok-kw">lambda</span> w: (len(w), w))
     # recurse: both None? both equal val and subtrees match?
     pass`,
         fn: 'same_tree',
+        solutions: [
+          { label: 'recursive', note: 'Structural equality via 3 cases.', code: `def same_tree(p, q):
+    if p is None and q is None:
+        return True
+    if p is None or q is None:
+        return False
+    pv, pl, pr = p
+    qv, ql, qr = q
+    return pv == qv and same_tree(pl, ql) and same_tree(pr, qr)` },
+          { label: 'iterative (stack)', note: 'BFS-style pair comparison; avoids recursion depth.', code: `def same_tree(p, q):
+    stack = [(p, q)]
+    while stack:
+        a, b = stack.pop()
+        if a is None and b is None:
+            continue
+        if a is None or b is None or a[0] != b[0]:
+            return False
+        stack.append((a[1], b[1]))
+        stack.append((a[2], b[2]))
+    return True` },
+        ],
         hints: [
           'Recurse. Base: both <code>None</code> -&gt; True. One <code>None</code> -&gt; False.',
           'Unpack <code>[val, left, right]</code> for both. If <code>val</code> differs, False.',
@@ -1255,6 +1453,27 @@ sorted(words, key=<span class="tok-kw">lambda</span> w: (len(w), w))
         starter: `def count_nodes(root):
     pass`,
         fn: 'count_nodes',
+        solutions: [
+          { label: 'recursive', code: `def count_nodes(root):
+    if root is None:
+        return 0
+    _, left, right = root
+    return 1 + count_nodes(left) + count_nodes(right)` },
+          { label: 'iterative BFS', note: 'Queue-based level scan.', code: `from collections import deque
+
+def count_nodes(root):
+    if root is None:
+        return 0
+    q = deque([root])
+    count = 0
+    while q:
+        node = q.popleft()
+        count += 1
+        _, l, r = node
+        if l is not None: q.append(l)
+        if r is not None: q.append(r)
+    return count` },
+        ],
         hints: [
           'Base case: <code>None</code> -&gt; 0.',
           'Otherwise: <code>1 + count_nodes(left) + count_nodes(right)</code>.',
@@ -1390,6 +1609,41 @@ graph = defaultdict(list)
     # bfs or dfs from (sr, sc); only flip cells matching original color
     pass`,
         fn: 'flood_fill',
+        solutions: [
+          { label: 'DFS', note: 'Recursive 4-direction fill. Guards against same-color start.', code: `def flood_fill(image, sr, sc, color):
+    rows, cols = len(image), len(image[0])
+    original = image[sr][sc]
+    if original == color:
+        return image
+
+    def dfs(r, c):
+        if r < 0 or r >= rows or c < 0 or c >= cols:
+            return
+        if image[r][c] != original:
+            return
+        image[r][c] = color
+        dfs(r+1, c); dfs(r-1, c); dfs(r, c+1); dfs(r, c-1)
+
+    dfs(sr, sc)
+    return image` },
+          { label: 'BFS', note: 'Iterative queue version — no recursion limits.', code: `from collections import deque
+
+def flood_fill(image, sr, sc, color):
+    rows, cols = len(image), len(image[0])
+    original = image[sr][sc]
+    if original == color:
+        return image
+    q = deque([(sr, sc)])
+    image[sr][sc] = color
+    while q:
+        r, c = q.popleft()
+        for dr, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
+            nr, nc = r+dr, c+dc
+            if 0 <= nr < rows and 0 <= nc < cols and image[nr][nc] == original:
+                image[nr][nc] = color
+                q.append((nr, nc))
+    return image` },
+        ],
         hints: [
           'Save the original color at <code>(sr, sc)</code> first — you will change it.',
           'If <code>color == original</code>, return early (else infinite loop on equal colors).',
@@ -1410,6 +1664,50 @@ graph = defaultdict(list)
     # dfs/bfs each unvisited 1, track max
     pass`,
         fn: 'max_area',
+        solutions: [
+          { label: 'DFS (mutates grid)', note: 'Sinks islands by flipping 1 to 0.', code: `def max_area(grid):
+    if not grid:
+        return 0
+    rows, cols = len(grid), len(grid[0])
+
+    def dfs(r, c):
+        if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] != 1:
+            return 0
+        grid[r][c] = 0
+        return 1 + dfs(r+1,c) + dfs(r-1,c) + dfs(r,c+1) + dfs(r,c-1)
+
+    best = 0
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 1:
+                best = max(best, dfs(r, c))
+    return best` },
+          { label: 'BFS with visited set', note: 'Non-destructive. Useful when you must preserve input.', code: `from collections import deque
+
+def max_area(grid):
+    if not grid:
+        return 0
+    rows, cols = len(grid), len(grid[0])
+    seen = set()
+    best = 0
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] != 1 or (r,c) in seen:
+                continue
+            area = 0
+            q = deque([(r,c)])
+            seen.add((r,c))
+            while q:
+                cr, cc = q.popleft()
+                area += 1
+                for dr, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
+                    nr, nc = cr+dr, cc+dc
+                    if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1 and (nr,nc) not in seen:
+                        seen.add((nr,nc))
+                        q.append((nr,nc))
+            best = max(best, area)
+    return best` },
+        ],
         hints: [
           'Iterate every cell. When you find a <code>1</code>, run DFS/BFS to count its component.',
           'Mark visited by flipping the cell to <code>0</code> (or use a <code>visited</code> set).',
@@ -1510,6 +1808,27 @@ graph = defaultdict(list)
     # hashmap of value -> True. O(n) time, O(n) space.
     pass`,
         fn: 'two_sum_fast',
+        solutions: [
+          { label: 'hashmap (one pass)', note: 'O(n) time, O(n) space.', code: `def two_sum_fast(nums, target):
+    seen = set()
+    for n in nums:
+        if target - n in seen:
+            return [target - n, n]
+        seen.add(n)
+    return []` },
+          { label: 'sort + two pointers', note: 'O(n log n) time, O(1) extra if in-place sort allowed.', code: `def two_sum_fast(nums, target):
+    s = sorted(nums)
+    lo, hi = 0, len(s) - 1
+    while lo < hi:
+        total = s[lo] + s[hi]
+        if total == target:
+            return [s[lo], s[hi]]
+        if total < target:
+            lo += 1
+        else:
+            hi -= 1
+    return []` },
+        ],
         hints: [
           'One pass with a <code>set</code> (or dict) of values seen so far.',
           'For each <code>n</code>, check if <code>target - n</code> is already in the set.',
@@ -1531,6 +1850,24 @@ graph = defaultdict(list)
         starter: `def space_complexity_of(label):
     pass`,
         fn: 'space_complexity_of',
+        solutions: [
+          { label: 'dict lookup', code: `def space_complexity_of(label):
+    return {
+        'recursive_fib': 'O(n)',
+        'iterative_fib': 'O(1)',
+        'merge_sort': 'O(n)',
+        'in_place_reverse': 'O(1)',
+    }[label]` },
+          { label: 'if/elif chain', code: `def space_complexity_of(label):
+    if label == 'recursive_fib':
+        return 'O(n)'
+    if label == 'iterative_fib':
+        return 'O(1)'
+    if label == 'merge_sort':
+        return 'O(n)'
+    if label == 'in_place_reverse':
+        return 'O(1)'` },
+        ],
         hints: [
           'Recursive fib uses call stack proportional to <code>n</code>.',
           'Iterative fib only keeps a couple of variables -&gt; constant.',
@@ -1644,6 +1981,24 @@ first, *rest = [<span class="tok-num">1</span>, <span class="tok-num">2</span>, 
     # Counter for frequencies, then find first index with count == 1
     pass`,
         fn: 'first_unique',
+        solutions: [
+          { label: 'Counter', note: 'Two passes; clean and Pythonic.', code: `from collections import Counter
+
+def first_unique(s):
+    counts = Counter(s)
+    for i, ch in enumerate(s):
+        if counts[ch] == 1:
+            return i
+    return -1` },
+          { label: 'manual dict', note: 'Same idea without the import.', code: `def first_unique(s):
+    counts = {}
+    for ch in s:
+        counts[ch] = counts.get(ch, 0) + 1
+    for i, ch in enumerate(s):
+        if counts[ch] == 1:
+            return i
+    return -1` },
+        ],
         hints: [
           'First pass: build <code>Counter(s)</code>.',
           'Second pass: <code>for i, ch in enumerate(s)</code>; return <code>i</code> if <code>counter[ch] == 1</code>.',
@@ -1664,6 +2019,20 @@ first, *rest = [<span class="tok-num">1</span>, <span class="tok-num">2</span>, 
         starter: `def flatten(lists):
     pass`,
         fn: 'flatten',
+        solutions: [
+          { label: 'comprehension', note: 'One line, idiomatic Python.', code: `def flatten(lists):
+    return [x for sub in lists for x in sub]` },
+          { label: 'itertools.chain', note: 'Slightly faster on huge inputs; lazy iterator.', code: `from itertools import chain
+
+def flatten(lists):
+    return list(chain.from_iterable(lists))` },
+          { label: 'manual loop', note: 'Verbose baseline for clarity.', code: `def flatten(lists):
+    result = []
+    for sub in lists:
+        for x in sub:
+            result.append(x)
+    return result` },
+        ],
         hints: [
           'Comprehension: <code>[x for sub in lists for x in sub]</code>.',
           'Or <code>list(itertools.chain.from_iterable(lists))</code>.',
@@ -1779,6 +2148,21 @@ first, *rest = [<span class="tok-num">1</span>, <span class="tok-num">2</span>, 
     # talk through: O(n) time, O(1) extra space
     pass`,
         fn: 'reverse_string',
+        solutions: [
+          { label: 'two pointers', note: 'In-place swap. O(n) time, O(1) extra space.', code: `def reverse_string(s):
+    left, right = 0, len(s) - 1
+    while left < right:
+        s[left], s[right] = s[right], s[left]
+        left += 1
+        right -= 1
+    return s` },
+          { label: 'list method', note: 'Cheats by using the built-in. Still in place.', code: `def reverse_string(s):
+    s.reverse()
+    return s` },
+          { label: 'slice trick', note: 'Not in place — allocates a new list. Mention this in interviews.', code: `def reverse_string(s):
+    s[:] = s[::-1]
+    return s` },
+        ],
         hints: [
           'Two pointers: <code>left = 0</code>, <code>right = len(s) - 1</code>.',
           'While <code>left &lt; right</code>: swap <code>s[left], s[right] = s[right], s[left]</code>, then move both inward.',
@@ -1961,8 +2345,22 @@ function renderChallenge(ch, key) {
       <div class="challenge-actions">
         <button class="btn run-btn">run tests</button>
         <button class="btn btn-ghost reset-btn">reset</button>
-        <button class="btn btn-ghost show-btn">show hint</button>
+        ${ch.solutions && ch.solutions.length ? `<button class="btn btn-ghost solutions-btn">show solutions</button>` : ''}
       </div>
+      ${ch.solutions && ch.solutions.length ? `
+        <div class="solutions-panel" style="display:none">
+          <div class="solutions-tabs">
+            ${ch.solutions.map((s, i) => `<button class="sol-tab ${i===0?'active':''}" data-idx="${i}">${escapeHtml(s.label)}</button>`).join('')}
+          </div>
+          ${ch.solutions.map((s, i) => `
+            <div class="sol-body ${i===0?'active':''}" data-idx="${i}">
+              ${s.note ? `<div class="sol-note">${s.note}</div>` : ''}
+              <pre><code>${escapeHtml(s.code)}</code></pre>
+              <button class="btn btn-ghost copy-sol-btn" data-idx="${i}">copy to editor</button>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
       <div class="console" style="display:none">
         <div class="console-label">// output</div>
         <div class="console-body"></div>
@@ -1972,7 +2370,8 @@ function renderChallenge(ch, key) {
   const editor = el.querySelector('.editor');
   const runBtn = el.querySelector('.run-btn');
   const resetBtn = el.querySelector('.reset-btn');
-  const showBtn = el.querySelector('.show-btn');
+  const solutionsBtn = el.querySelector('.solutions-btn');
+  const solutionsPanel = el.querySelector('.solutions-panel');
   const consoleEl = el.querySelector('.console');
   const consoleBody = el.querySelector('.console-body');
 
@@ -1988,13 +2387,26 @@ function renderChallenge(ch, key) {
 
   runBtn.addEventListener('click', () => runChallenge(ch, key, editor, consoleEl, consoleBody, runBtn));
   resetBtn.addEventListener('click', () => { editor.value = ch.starter; consoleEl.style.display = 'none'; });
-  showBtn.addEventListener('click', () => {
-    consoleEl.style.display = 'block';
-    consoleBody.innerHTML = `<div style="color:var(--ink-dim);font-size:12px">
-      <strong style="color:var(--acc-3)">// hint:</strong>
-      ${getHint(ch)}
-    </div>`;
-  });
+  if (solutionsBtn && solutionsPanel) {
+    solutionsBtn.addEventListener('click', () => {
+      const open = solutionsPanel.style.display === 'block';
+      solutionsPanel.style.display = open ? 'none' : 'block';
+      solutionsBtn.textContent = open ? 'show solutions' : 'hide solutions';
+    });
+    solutionsPanel.querySelectorAll('.sol-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const idx = tab.dataset.idx;
+        solutionsPanel.querySelectorAll('.sol-tab').forEach(t => t.classList.toggle('active', t.dataset.idx === idx));
+        solutionsPanel.querySelectorAll('.sol-body').forEach(b => b.classList.toggle('active', b.dataset.idx === idx));
+      });
+    });
+    solutionsPanel.querySelectorAll('.copy-sol-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        editor.value = ch.solutions[idx].code;
+      });
+    });
+  }
   return el;
 }
 
