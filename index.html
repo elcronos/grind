@@ -933,6 +933,307 @@ const LESSONS = [
           { args: [[0,0,1]], expected: [1,0,0] },
         ],
       },
+    ,
+      {
+        title: 'contains duplicate',
+        difficulty: 'easy',
+        prompt: 'Return True if any value appears at least twice in <code>nums</code>, else False.',
+        starter: `def contains_duplicate(nums):
+    pass`,
+        fn: 'contains_duplicate',
+        solutions: [
+          { label: 'set', note: 'O(n) time and space.', code: `def contains_duplicate(nums):
+    seen = set()
+    for n in nums:
+        if n in seen:
+            return True
+        seen.add(n)
+    return False` },
+          { label: 'len comparison', note: 'One-liner. Builds full set even if dup is early.', code: `def contains_duplicate(nums):
+    return len(nums) != len(set(nums))` },
+        ],
+        hints: [
+          'Brute force is O(n²) — two nested loops.',
+          'Sort first, then check adjacent pairs: O(n log n).',
+          'Best: use a <code>set</code> for O(n) — early exit on first repeat.',
+        ],
+        cases: [ { args: [[1,2,3,1]], expected: true }, { args: [[1,2,3,4]], expected: false }, { args: [[]], expected: false }, { args: [[1,1]], expected: true } ],
+      },
+      {
+        title: 'maximum subarray (Kadane)',
+        difficulty: 'medium',
+        prompt: 'Return the largest sum of any contiguous subarray. Single-element subarrays count.',
+        starter: `def max_subarray(nums):
+    pass`,
+        fn: 'max_subarray',
+        solutions: [
+          { label: 'Kadane', note: 'O(n) time, O(1) space.', code: `def max_subarray(nums):
+    best = current = nums[0]
+    for n in nums[1:]:
+        current = max(n, current + n)
+        best = max(best, current)
+    return best` },
+          { label: 'divide & conquer', note: 'O(n log n). Educational, slower than Kadane.', code: `def max_subarray(nums):
+    def helper(lo, hi):
+        if lo == hi: return nums[lo]
+        mid = (lo + hi) // 2
+        left = helper(lo, mid)
+        right = helper(mid+1, hi)
+        l = float('-inf'); s = 0
+        for i in range(mid, lo-1, -1):
+            s += nums[i]; l = max(l, s)
+        r = float('-inf'); s = 0
+        for i in range(mid+1, hi+1):
+            s += nums[i]; r = max(r, s)
+        return max(left, right, l+r)
+    return helper(0, len(nums)-1)` },
+        ],
+        hints: [
+          'Kadane: track running sum; reset to current if it goes negative.',
+          'Or: at each i, current = max(num, current + num).',
+          'Track <code>best = max(best, current)</code> each step.',
+        ],
+        cases: [ { args: [[-2,1,-3,4,-1,2,1,-5,4]], expected: 6 }, { args: [[1]], expected: 1 }, { args: [[5,4,-1,7,8]], expected: 23 }, { args: [[-3,-2,-1]], expected: -1 } ],
+      },
+      {
+        title: 'product except self',
+        difficulty: 'medium',
+        prompt: 'Return an array where <code>output[i]</code> is the product of every element except <code>nums[i]</code>. Do it without division.',
+        starter: `def product_except_self(nums):
+    pass`,
+        fn: 'product_except_self',
+        solutions: [
+          { label: 'prefix/suffix', note: 'Two passes, O(1) extra space.', code: `def product_except_self(nums):
+    n = len(nums)
+    out = [1] * n
+    left = 1
+    for i in range(n):
+        out[i] = left
+        left *= nums[i]
+    right = 1
+    for i in range(n - 1, -1, -1):
+        out[i] *= right
+        right *= nums[i]
+    return out` },
+          { label: 'two extra arrays', note: 'Clearer, uses O(n) extra space.', code: `def product_except_self(nums):
+    n = len(nums)
+    L = [1] * n
+    R = [1] * n
+    for i in range(1, n):
+        L[i] = L[i-1] * nums[i-1]
+    for i in range(n-2, -1, -1):
+        R[i] = R[i+1] * nums[i+1]
+    return [L[i] * R[i] for i in range(n)]` },
+        ],
+        hints: [
+          'Two passes: prefix products from left, then multiply by suffix products from right.',
+          'Pass 1: <code>output[i] = product of nums[0..i-1]</code>.',
+          'Pass 2: walk right-to-left multiplying by running suffix product.',
+          'O(n) time, O(1) extra space (output array does not count).',
+        ],
+        cases: [ { args: [[1,2,3,4]], expected: [24,12,8,6] }, { args: [[-1,1,0,-3,3]], expected: [0,0,9,0,0] }, { args: [[2,3]], expected: [3,2] } ],
+      },
+      {
+        title: 'rotate array',
+        difficulty: 'easy',
+        prompt: 'Rotate <code>nums</code> to the right by <code>k</code> steps (in place) and return it.',
+        starter: `def rotate(nums, k):
+    pass`,
+        fn: 'rotate',
+        solutions: [
+          { label: 'reverse trick', note: 'O(n) time, O(1) extra space.', code: `def rotate(nums, k):
+    n = len(nums)
+    k %= n
+    def rev(l, r):
+        while l < r:
+            nums[l], nums[r] = nums[r], nums[l]
+            l += 1; r -= 1
+    rev(0, n-1)
+    rev(0, k-1)
+    rev(k, n-1)
+    return nums` },
+          { label: 'slice', note: 'O(n) time and space. Idiomatic Python.', code: `def rotate(nums, k):
+    n = len(nums)
+    k %= n
+    nums[:] = nums[-k:] + nums[:-k]
+    return nums` },
+        ],
+        hints: [
+          'k can be larger than len(nums) — use <code>k %= len(nums)</code>.',
+          'Trick: reverse the whole array, then reverse first k, then reverse the rest.',
+          'Or use slicing: <code>nums[:] = nums[-k:] + nums[:-k]</code>.',
+        ],
+        cases: [ { args: [[1,2,3,4,5,6,7], 3], expected: [5,6,7,1,2,3,4] }, { args: [[-1,-100,3,99], 2], expected: [3,99,-1,-100] }, { args: [[1], 5], expected: [1] }, { args: [[1,2], 3], expected: [2,1] } ],
+      },
+      {
+        title: 'remove duplicates from sorted array',
+        difficulty: 'easy',
+        prompt: 'Given a sorted array, remove duplicates in place. Return the array of unique elements (first part of the modified list).',
+        starter: `def remove_dupes(nums):
+    pass`,
+        fn: 'remove_dupes',
+        solutions: [
+          { label: 'two pointers', code: `def remove_dupes(nums):
+    if not nums:
+        return []
+    write = 1
+    for i in range(1, len(nums)):
+        if nums[i] != nums[write-1]:
+            nums[write] = nums[i]
+            write += 1
+    return nums[:write]` },
+          { label: 'dict-keys trick', note: 'Order-preserving, not in place.', code: `def remove_dupes(nums):
+    return list(dict.fromkeys(nums))` },
+        ],
+        hints: [
+          'Two pointers: <code>write</code> index for next unique slot.',
+          'Walk through; if <code>nums[i] != nums[write-1]</code>, copy and bump write.',
+          'Return <code>nums[:write]</code>.',
+        ],
+        cases: [ { args: [[1,1,2]], expected: [1,2] }, { args: [[0,0,1,1,1,2,2,3,3,4]], expected: [0,1,2,3,4] }, { args: [[]], expected: [] }, { args: [[1]], expected: [1] } ],
+      },
+      {
+        title: 'plus one',
+        difficulty: 'easy',
+        prompt: '<code>digits</code> represents a non-negative integer (most significant digit first). Add one and return the new digit list.',
+        starter: `def plus_one(digits):
+    pass`,
+        fn: 'plus_one',
+        solutions: [
+          { label: 'reverse walk', code: `def plus_one(digits):
+    for i in range(len(digits) - 1, -1, -1):
+        if digits[i] < 9:
+            digits[i] += 1
+            return digits
+        digits[i] = 0
+    return [1] + digits` },
+          { label: 'int round-trip', note: 'Cheats with int conversion. Mention this in interview.', code: `def plus_one(digits):
+    n = int(''.join(map(str, digits))) + 1
+    return [int(c) for c in str(n)]` },
+        ],
+        hints: [
+          'Walk from the end. If digit &lt; 9, increment and return.',
+          'If digit is 9, set to 0 and carry over.',
+          'If you fall off the left edge, prepend a 1.',
+        ],
+        cases: [ { args: [[1,2,3]], expected: [1,2,4] }, { args: [[4,3,2,1]], expected: [4,3,2,2] }, { args: [[9]], expected: [1,0] }, { args: [[9,9,9]], expected: [1,0,0,0] } ],
+      },
+      {
+        title: 'merge sorted arrays',
+        difficulty: 'easy',
+        prompt: "Merge two sorted arrays into one sorted array. Don't use sort().",
+        starter: `def merge_sorted(a, b):
+    pass`,
+        fn: 'merge_sorted',
+        solutions: [
+          { label: 'two pointers', note: 'O(n + m) time.', code: `def merge_sorted(a, b):
+    i = j = 0
+    out = []
+    while i < len(a) and j < len(b):
+        if a[i] <= b[j]:
+            out.append(a[i]); i += 1
+        else:
+            out.append(b[j]); j += 1
+    out.extend(a[i:])
+    out.extend(b[j:])
+    return out` },
+          { label: 'heapq.merge', note: 'Built-in lazy merge of any number of sorted iterables.', code: `import heapq
+
+def merge_sorted(a, b):
+    return list(heapq.merge(a, b))` },
+        ],
+        hints: [
+          'Two pointers, one per array.',
+          'Compare current items; append the smaller; advance that pointer.',
+          'When one runs out, append the rest of the other.',
+        ],
+        cases: [ { args: [[1,3,5], [2,4,6]], expected: [1,2,3,4,5,6] }, { args: [[], [1,2]], expected: [1,2] }, { args: [[1,2], []], expected: [1,2] }, { args: [[1,1,1], [1,1]], expected: [1,1,1,1,1] } ],
+      },
+      {
+        title: 'single number (XOR trick)',
+        difficulty: 'easy',
+        prompt: 'Every element in <code>nums</code> appears twice except for one. Find that one. O(n) time, O(1) space.',
+        starter: `def single_number(nums):
+    pass`,
+        fn: 'single_number',
+        solutions: [
+          { label: 'XOR fold', note: 'O(n) time, O(1) space.', code: `def single_number(nums):
+    result = 0
+    for n in nums:
+        result ^= n
+    return result` },
+          { label: 'functools.reduce', note: 'One-liner using reduce + xor.', code: `from functools import reduce
+import operator
+
+def single_number(nums):
+    return reduce(operator.xor, nums)` },
+          { label: 'Counter', note: 'O(n) time and space. Slower constant but obvious.', code: `from collections import Counter
+
+def single_number(nums):
+    for k, v in Counter(nums).items():
+        if v == 1:
+            return k` },
+        ],
+        hints: [
+          'XOR has nice properties: <code>x ^ x = 0</code> and <code>x ^ 0 = x</code>.',
+          'XOR all elements together — duplicates cancel out.',
+          'Result is the unique element.',
+        ],
+        cases: [ { args: [[2,2,1]], expected: 1 }, { args: [[4,1,2,1,2]], expected: 4 }, { args: [[1]], expected: 1 }, { args: [[-1,-1,7]], expected: 7 } ],
+      },
+      {
+        title: 'majority element (Boyer-Moore)',
+        difficulty: 'easy',
+        prompt: 'Return the element that appears more than <code>n/2</code> times. Guaranteed to exist.',
+        starter: `def majority(nums):
+    pass`,
+        fn: 'majority',
+        solutions: [
+          { label: 'Boyer-Moore', note: 'O(n) time, O(1) space.', code: `def majority(nums):
+    candidate = None
+    count = 0
+    for n in nums:
+        if count == 0:
+            candidate = n
+        count += 1 if n == candidate else -1
+    return candidate` },
+          { label: 'sort + middle', note: 'O(n log n). The majority element is always at index n//2 after sorting.', code: `def majority(nums):
+    return sorted(nums)[len(nums) // 2]` },
+          { label: 'Counter', note: 'O(n) time, O(n) space.', code: `from collections import Counter
+
+def majority(nums):
+    return Counter(nums).most_common(1)[0][0]` },
+        ],
+        hints: [
+          'Boyer-Moore voting: keep a candidate and a count.',
+          'If count is 0, pick a new candidate. If match, count++; else count--.',
+          'The surviving candidate is the majority (when guaranteed to exist).',
+        ],
+        cases: [ { args: [[3,2,3]], expected: 3 }, { args: [[2,2,1,1,1,2,2]], expected: 2 }, { args: [[1]], expected: 1 }, { args: [[5,5,5,5,1,2,3]], expected: 5 } ],
+      },
+      {
+        title: 'find all numbers disappeared',
+        difficulty: 'easy',
+        prompt: 'Given <code>nums</code> with values in <code>[1, n]</code> (some appearing twice, some not at all), return the values in <code>[1, n]</code> that are missing. Any order.',
+        starter: `def find_disappeared(nums):
+    pass`,
+        fn: 'find_disappeared',
+        solutions: [
+          { label: 'set diff', note: 'O(n) time, O(n) space.', code: `def find_disappeared(nums):
+    return sorted(set(range(1, len(nums) + 1)) - set(nums))` },
+          { label: 'in-place marking', note: 'O(n) time, O(1) extra space (mutates input).', code: `def find_disappeared(nums):
+    for n in nums:
+        idx = abs(n) - 1
+        nums[idx] = -abs(nums[idx])
+    return [i + 1 for i, v in enumerate(nums) if v > 0]` },
+        ],
+        hints: [
+          'Set difference: <code>set(range(1, n+1)) - set(nums)</code>.',
+          'Or: in-place flip — for each value v, mark <code>nums[v-1]</code> negative; positives at end are missing indices+1.',
+        ],
+        cases: [ { args: [[4,3,2,7,8,2,3,1]], expected: [5,6] }, { args: [[1,1]], expected: [2] }, { args: [[1,2,3]], expected: [] }, { args: [[2,2,2,2]], expected: [1,3,4] } ],
+        normalize: 'sortPair',
+      },
     ],
   },
   {
@@ -1119,6 +1420,312 @@ def min_subarray_len(target, nums):
           { args: [[1,1,1], 0], expected: 3 },
         ],
       },
+    ,
+      {
+        title: 'maximum average subarray of size k',
+        difficulty: 'easy',
+        prompt: 'Return the maximum average of any contiguous subarray of length <code>k</code>.',
+        starter: `def find_max_average(nums, k):
+    pass`,
+        fn: 'find_max_average',
+        solutions: [
+          { label: 'fixed window', code: `def find_max_average(nums, k):
+    window = sum(nums[:k])
+    best = window
+    for i in range(k, len(nums)):
+        window += nums[i] - nums[i - k]
+        best = max(best, window)
+    return best / k` },
+          { label: 'naive O(n*k)', note: 'Educational baseline. Recomputes each window.', code: `def find_max_average(nums, k):
+    best = float('-inf')
+    for i in range(len(nums) - k + 1):
+        best = max(best, sum(nums[i:i+k]))
+    return best / k` },
+        ],
+        hints: [
+          'Fixed-size window of width k.',
+          'Compute initial sum of first k items.',
+          'Slide: add nums[i], subtract nums[i-k]. Track best sum.',
+          'Return best / k.',
+        ],
+        cases: [ { args: [[1,12,-5,-6,50,3], 4], expected: 12.75 }, { args: [[5], 1], expected: 5.0 }, { args: [[0,1,1,3,3], 4], expected: 2.0 } ],
+      },
+      {
+        title: 'longest repeating char replacement',
+        difficulty: 'medium',
+        prompt: 'Given string <code>s</code> and integer <code>k</code>, return the longest substring you can obtain by replacing at most <code>k</code> characters so all letters in the window are the same.',
+        starter: `def char_replacement(s, k):
+    pass`,
+        fn: 'char_replacement',
+        solutions: [
+          { label: 'sliding window', note: 'O(n). Tracking max_count loosely is fine — answer never shrinks.', code: `from collections import Counter
+
+def char_replacement(s, k):
+    counts = Counter()
+    left = 0
+    max_count = 0
+    best = 0
+    for right, ch in enumerate(s):
+        counts[ch] += 1
+        max_count = max(max_count, counts[ch])
+        if (right - left + 1) - max_count > k:
+            counts[s[left]] -= 1
+            left += 1
+        best = max(best, right - left + 1)
+    return best` },
+        ],
+        hints: [
+          'Window invariant: (window length) - (max char count in window) &lt;= k.',
+          'Use a counter for chars in the window.',
+          'If invariant breaks, slide left forward (decrement counter).',
+        ],
+        cases: [ { args: ['ABAB', 2], expected: 4 }, { args: ['AABABBA', 1], expected: 4 }, { args: ['A', 1], expected: 1 }, { args: ['ABCDE', 1], expected: 2 } ],
+      },
+      {
+        title: 'fruit into baskets',
+        difficulty: 'medium',
+        prompt: 'Given a row of fruits, return the length of the longest contiguous subarray with at most 2 distinct values.',
+        starter: `def fruit_baskets(fruits):
+    pass`,
+        fn: 'fruit_baskets',
+        solutions: [
+          { label: 'at-most-K=2', code: `def fruit_baskets(fruits):
+    counts = {}
+    left = 0
+    best = 0
+    for right, f in enumerate(fruits):
+        counts[f] = counts.get(f, 0) + 1
+        while len(counts) > 2:
+            counts[fruits[left]] -= 1
+            if counts[fruits[left]] == 0:
+                del counts[fruits[left]]
+            left += 1
+        best = max(best, right - left + 1)
+    return best` },
+        ],
+        hints: [
+          "Generic 'at most K distinct' pattern with K=2.",
+          'Dict of counts in the window; shrink left while distinct count > 2.',
+        ],
+        cases: [ { args: [[1,2,1]], expected: 3 }, { args: [[0,1,2,2]], expected: 3 }, { args: [[1,2,3,2,2]], expected: 4 }, { args: [[3,3,3,1,2,1,1,2,3,3,4]], expected: 5 } ],
+      },
+      {
+        title: 'permutation in string',
+        difficulty: 'medium',
+        prompt: 'Return True if any permutation of <code>s1</code> is a substring of <code>s2</code>.',
+        starter: `def check_inclusion(s1, s2):
+    pass`,
+        fn: 'check_inclusion',
+        solutions: [
+          { label: 'freq window', note: 'O(n) using a Counter equality check.', code: `from collections import Counter
+
+def check_inclusion(s1, s2):
+    if len(s1) > len(s2):
+        return False
+    need = Counter(s1)
+    window = Counter(s2[:len(s1)])
+    if window == need:
+        return True
+    for i in range(len(s1), len(s2)):
+        window[s2[i]] += 1
+        window[s2[i - len(s1)]] -= 1
+        if window[s2[i - len(s1)]] == 0:
+            del window[s2[i - len(s1)]]
+        if window == need:
+            return True
+    return False` },
+        ],
+        hints: [
+          'Fixed-size window of len(s1) over s2.',
+          'Compare frequency counts. If equal at any window, return True.',
+        ],
+        cases: [ { args: ['ab','eidbaooo'], expected: true }, { args: ['ab','eidboaoo'], expected: false }, { args: ['adc','dcda'], expected: true }, { args: ['hello','ooolleoooleh'], expected: false } ],
+      },
+      {
+        title: 'find all anagrams',
+        difficulty: 'medium',
+        prompt: 'Return all starting indices of substrings of <code>s</code> that are anagrams of <code>p</code>.',
+        starter: `def find_anagrams(s, p):
+    pass`,
+        fn: 'find_anagrams',
+        solutions: [
+          { label: 'freq window', code: `from collections import Counter
+
+def find_anagrams(s, p):
+    if len(p) > len(s):
+        return []
+    need = Counter(p)
+    window = Counter(s[:len(p)])
+    out = []
+    if window == need:
+        out.append(0)
+    for i in range(len(p), len(s)):
+        window[s[i]] += 1
+        window[s[i - len(p)]] -= 1
+        if window[s[i - len(p)]] == 0:
+            del window[s[i - len(p)]]
+        if window == need:
+            out.append(i - len(p) + 1)
+    return out` },
+        ],
+        hints: [
+          "Same trick as 'permutation in string', but collect starts instead of returning early.",
+        ],
+        cases: [ { args: ['cbaebabacd','abc'], expected: [0,6] }, { args: ['abab','ab'], expected: [0,1,2] }, { args: ['aaaa','b'], expected: [] } ],
+      },
+      {
+        title: 'longest substring with k distinct',
+        difficulty: 'medium',
+        prompt: 'Return the length of the longest substring of <code>s</code> with at most <code>k</code> distinct characters.',
+        starter: `def longest_k_distinct(s, k):
+    pass`,
+        fn: 'longest_k_distinct',
+        solutions: [
+          { label: 'sliding window', code: `def longest_k_distinct(s, k):
+    if k == 0:
+        return 0
+    counts = {}
+    left = 0
+    best = 0
+    for right, ch in enumerate(s):
+        counts[ch] = counts.get(ch, 0) + 1
+        while len(counts) > k:
+            counts[s[left]] -= 1
+            if counts[s[left]] == 0:
+                del counts[s[left]]
+            left += 1
+        best = max(best, right - left + 1)
+    return best` },
+        ],
+        hints: [
+          'At-most-K pattern. Dict of counts. Shrink while distinct > k.',
+          'Track best across iterations.',
+        ],
+        cases: [ { args: ['eceba', 2], expected: 3 }, { args: ['aa', 1], expected: 2 }, { args: ['', 1], expected: 0 }, { args: ['abc', 0], expected: 0 } ],
+      },
+      {
+        title: 'max consecutive ones',
+        difficulty: 'easy',
+        prompt: 'Return the maximum number of consecutive 1s in a binary array.',
+        starter: `def max_consecutive_ones(nums):
+    pass`,
+        fn: 'max_consecutive_ones',
+        solutions: [
+          { label: 'single counter', code: `def max_consecutive_ones(nums):
+    best = current = 0
+    for n in nums:
+        if n == 1:
+            current += 1
+            best = max(best, current)
+        else:
+            current = 0
+    return best` },
+          { label: 'itertools.groupby', note: 'Idiomatic Python one-liner.', code: `from itertools import groupby
+
+def max_consecutive_ones(nums):
+    return max((sum(1 for _ in g) for k, g in groupby(nums) if k == 1), default=0)` },
+        ],
+        hints: [
+          'Trivial window: every 0 resets the counter.',
+          'Track best after each reset.',
+        ],
+        cases: [ { args: [[1,1,0,1,1,1]], expected: 3 }, { args: [[1,0,1,1,0,1]], expected: 2 }, { args: [[0,0,0]], expected: 0 }, { args: [[1,1,1]], expected: 3 } ],
+      },
+      {
+        title: 'subarray product less than k',
+        difficulty: 'medium',
+        prompt: 'Count the number of contiguous subarrays of positive integers whose product is strictly less than <code>k</code>.',
+        starter: `def num_subarrays(nums, k):
+    pass`,
+        fn: 'num_subarrays',
+        solutions: [
+          { label: 'sliding window', code: `def num_subarrays(nums, k):
+    if k <= 1:
+        return 0
+    product = 1
+    left = 0
+    count = 0
+    for right, n in enumerate(nums):
+        product *= n
+        while product >= k:
+            product //= nums[left]
+            left += 1
+        count += right - left + 1
+    return count` },
+        ],
+        hints: [
+          "k <= 1 -> 0 (since values are positive, product can't be less than 1).",
+          'Sliding window with running product. Shrink left while product >= k.',
+          'Every valid right adds (right - left + 1) new subarrays ending at right.',
+        ],
+        cases: [ { args: [[10,5,2,6], 100], expected: 8 }, { args: [[1,2,3], 0], expected: 0 }, { args: [[1,1,1], 2], expected: 3 } ],
+      },
+      {
+        title: 'min window covering chars',
+        difficulty: 'medium',
+        prompt: 'Given strings <code>s</code> and <code>t</code>, return the smallest substring of <code>s</code> that contains all characters of <code>t</code> (with multiplicity). Empty string if impossible.',
+        starter: `def min_window(s, t):
+    pass`,
+        fn: 'min_window',
+        solutions: [
+          { label: 'sliding window', code: `from collections import Counter
+
+def min_window(s, t):
+    if not t or not s:
+        return ''
+    need = Counter(t)
+    missing = len(t)
+    left = 0
+    best = (0, 0, float('inf'))
+    for right, ch in enumerate(s):
+        if need[ch] > 0:
+            missing -= 1
+        need[ch] -= 1
+        while missing == 0:
+            if right - left + 1 < best[2]:
+                best = (left, right + 1, right - left + 1)
+            need[s[left]] += 1
+            if need[s[left]] > 0:
+                missing += 1
+            left += 1
+    return s[best[0]:best[1]] if best[2] != float('inf') else ''` },
+        ],
+        hints: [
+          "Classic 'minimum window substring'. Grow right, shrink left while window is valid.",
+          "Track required counts with a Counter, plus a 'matches' counter to know when window covers t.",
+        ],
+        cases: [ { args: ['ADOBECODEBANC','ABC'], expected: 'BANC' }, { args: ['a','a'], expected: 'a' }, { args: ['a','aa'], expected: '' } ],
+      },
+      {
+        title: 'longest substring same after replacement',
+        difficulty: 'medium',
+        prompt: 'Return the length of the longest substring containing only one distinct letter after at most <code>k</code> single-letter replacements. (Variant of char-replacement; uniform-target version.)',
+        starter: `def longest_uniform(s, k):
+    pass`,
+        fn: 'longest_uniform',
+        solutions: [
+          { label: 'sliding window', code: `from collections import Counter
+
+def longest_uniform(s, k):
+    counts = Counter()
+    left = 0
+    max_count = 0
+    best = 0
+    for right, ch in enumerate(s):
+        counts[ch] += 1
+        max_count = max(max_count, counts[ch])
+        if (right - left + 1) - max_count > k:
+            counts[s[left]] -= 1
+            left += 1
+        best = max(best, right - left + 1)
+    return best` },
+        ],
+        hints: [
+          'Same engine as char-replacement: track max_count of any letter in the window.',
+          'Window is valid while (size - max_count) <= k.',
+        ],
+        cases: [ { args: ['AABABBA', 1], expected: 4 }, { args: ['ABAB', 2], expected: 4 }, { args: ['ABCDE', 1], expected: 2 } ],
+      },
     ],
   },
   {
@@ -1293,6 +1900,305 @@ def search_insert(nums, target):
           { args: [16], expected: 4 },
           { args: [2147395599], expected: 46339 },
         ],
+      },
+    ,
+      {
+        title: 'find peak element',
+        difficulty: 'medium',
+        prompt: 'A peak is strictly greater than its neighbors. Return any peak index. <code>nums[-1] = nums[n] = -inf</code>. O(log n).',
+        starter: `def find_peak(nums):
+    pass`,
+        fn: 'find_peak',
+        solutions: [
+          { label: 'binary search', code: `def find_peak(nums):
+    lo, hi = 0, len(nums) - 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if nums[mid] < nums[mid + 1]:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo` },
+        ],
+        hints: [
+          'Binary search on slopes: if nums[mid] < nums[mid+1], a peak is to the right.',
+          'Else a peak is at mid or to the left.',
+        ],
+        cases: [ { args: [[1,2,3,1]], expected: 2 }, { args: [[1,2,1,3,5,6,4]], expected: 5 }, { args: [[1]], expected: 0 } ],
+      },
+      {
+        title: 'search in rotated sorted array',
+        difficulty: 'medium',
+        prompt: "A sorted array was rotated at an unknown pivot. Find <code>target</code>'s index or -1. O(log n).",
+        starter: `def search_rotated(nums, target):
+    pass`,
+        fn: 'search_rotated',
+        solutions: [
+          { label: 'one-pass binary search', code: `def search_rotated(nums, target):
+    lo, hi = 0, len(nums) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if nums[mid] == target:
+            return mid
+        if nums[lo] <= nums[mid]:
+            if nums[lo] <= target < nums[mid]:
+                hi = mid - 1
+            else:
+                lo = mid + 1
+        else:
+            if nums[mid] < target <= nums[hi]:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+    return -1` },
+        ],
+        hints: [
+          'At each step, one half is fully sorted. Check which.',
+          'Left half sorted: nums[lo] <= nums[mid].',
+          'If target lies in the sorted half, search there; else go the other way.',
+        ],
+        cases: [ { args: [[4,5,6,7,0,1,2], 0], expected: 4 }, { args: [[4,5,6,7,0,1,2], 3], expected: -1 }, { args: [[1], 0], expected: -1 }, { args: [[1,3], 3], expected: 1 } ],
+      },
+      {
+        title: 'find min in rotated sorted',
+        difficulty: 'medium',
+        prompt: 'Return the minimum element of a rotated sorted array (no duplicates).',
+        starter: `def find_min(nums):
+    pass`,
+        fn: 'find_min',
+        solutions: [
+          { label: 'binary search', code: `def find_min(nums):
+    lo, hi = 0, len(nums) - 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if nums[mid] > nums[hi]:
+            lo = mid + 1
+        else:
+            hi = mid
+    return nums[lo]` },
+        ],
+        hints: [
+          'Compare nums[mid] with nums[hi]. If greater, min is to the right of mid.',
+          'Else min is at mid or to the left.',
+        ],
+        cases: [ { args: [[3,4,5,1,2]], expected: 1 }, { args: [[4,5,6,7,0,1,2]], expected: 0 }, { args: [[11,13,15,17]], expected: 11 }, { args: [[2,1]], expected: 1 } ],
+      },
+      {
+        title: 'koko eating bananas',
+        difficulty: 'medium',
+        prompt: "Koko has <code>piles</code> of bananas and <code>h</code> hours. She picks an eating speed <code>k</code> (bananas/hour) and eats from one pile per hour, capped at the pile's size. Return the minimum integer <code>k</code> that lets her finish in <code>h</code> hours.",
+        starter: `def min_eating_speed(piles, h):
+    pass`,
+        fn: 'min_eating_speed',
+        solutions: [
+          { label: 'binary search on answer', code: `def min_eating_speed(piles, h):
+    lo, hi = 1, max(piles)
+    while lo < hi:
+        k = (lo + hi) // 2
+        hours = sum((p + k - 1) // k for p in piles)
+        if hours <= h:
+            hi = k
+        else:
+            lo = k + 1
+    return lo` },
+        ],
+        hints: [
+          'Binary search on the answer: k in [1, max(piles)].',
+          'For each k, compute total hours = sum(ceil(p / k)).',
+          'Pick the smallest k with hours <= h.',
+        ],
+        cases: [ { args: [[3,6,7,11], 8], expected: 4 }, { args: [[30,11,23,4,20], 5], expected: 30 }, { args: [[30,11,23,4,20], 6], expected: 23 }, { args: [[1], 1], expected: 1 } ],
+      },
+      {
+        title: 'capacity to ship within d days',
+        difficulty: 'medium',
+        prompt: 'Pack <code>weights</code> in order onto a ship of capacity <code>cap</code>. Return the smallest <code>cap</code> that lets all weights ship within <code>days</code>.',
+        starter: `def ship_within_days(weights, days):
+    pass`,
+        fn: 'ship_within_days',
+        solutions: [
+          { label: 'binary search on answer', code: `def ship_within_days(weights, days):
+    def required(cap):
+        d = 1
+        load = 0
+        for w in weights:
+            if load + w > cap:
+                d += 1
+                load = 0
+            load += w
+        return d
+    lo, hi = max(weights), sum(weights)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if required(mid) <= days:
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo` },
+        ],
+        hints: [
+          'Binary search the answer: lo = max(weights) (must fit each single weight); hi = sum(weights).',
+          'For each cap, greedily pack to count required days.',
+        ],
+        cases: [ { args: [[1,2,3,4,5,6,7,8,9,10], 5], expected: 15 }, { args: [[3,2,2,4,1,4], 3], expected: 6 }, { args: [[1,2,3,1,1], 4], expected: 3 } ],
+      },
+      {
+        title: 'h-index II',
+        difficulty: 'medium',
+        prompt: 'Sorted <code>citations</code>. Return h-index: max h such that there are at least h papers with >= h citations. O(log n).',
+        starter: `def h_index(citations):
+    pass`,
+        fn: 'h_index',
+        solutions: [
+          { label: 'binary search', code: `def h_index(citations):
+    n = len(citations)
+    lo, hi = 0, n
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if citations[mid] >= n - mid:
+            hi = mid
+        else:
+            lo = mid + 1
+    return n - lo` },
+        ],
+        hints: [
+          'Binary search index i where citations[i] >= n - i.',
+          'Answer is n - (smallest such i).',
+        ],
+        cases: [ { args: [[0,1,3,5,6]], expected: 3 }, { args: [[1,2,100]], expected: 2 }, { args: [[]], expected: 0 }, { args: [[0]], expected: 0 } ],
+      },
+      {
+        title: 'split array largest sum',
+        difficulty: 'medium',
+        prompt: 'Split <code>nums</code> into <code>k</code> non-empty contiguous parts. Return the minimum possible largest part sum.',
+        starter: `def split_array(nums, k):
+    pass`,
+        fn: 'split_array',
+        solutions: [
+          { label: 'binary search on answer', code: `def split_array(nums, k):
+    def parts_needed(cap):
+        parts = 1
+        cur = 0
+        for n in nums:
+            if cur + n > cap:
+                parts += 1
+                cur = 0
+            cur += n
+        return parts
+    lo, hi = max(nums), sum(nums)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if parts_needed(mid) <= k:
+            hi = mid
+        else:
+            lo = mid + 1
+    return lo` },
+        ],
+        hints: [
+          'Binary search on answer: lo = max(nums), hi = sum(nums).',
+          'For each candidate max, greedily count parts needed.',
+          'If parts <= k, try smaller max.',
+        ],
+        cases: [ { args: [[7,2,5,10,8], 2], expected: 18 }, { args: [[1,2,3,4,5], 2], expected: 9 }, { args: [[1,4,4], 3], expected: 4 } ],
+      },
+      {
+        title: 'single element in sorted',
+        difficulty: 'medium',
+        prompt: 'Sorted array where every element appears twice except one. Find it in O(log n).',
+        starter: `def single_non_dup(nums):
+    pass`,
+        fn: 'single_non_dup',
+        solutions: [
+          { label: 'binary search parity', code: `def single_non_dup(nums):
+    lo, hi = 0, len(nums) - 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if mid % 2 == 1:
+            mid -= 1
+        if nums[mid] == nums[mid + 1]:
+            lo = mid + 2
+        else:
+            hi = mid
+    return nums[lo]` },
+        ],
+        hints: [
+          'Pairs start at even indices before the unique element. After it, pairs start at odd indices.',
+          'Binary search on index parity: ensure mid is even (mid &= ~1).',
+          'If nums[mid] == nums[mid+1], unique is to the right; else to the left or at mid.',
+        ],
+        cases: [ { args: [[1,1,2,3,3,4,4,8,8]], expected: 2 }, { args: [[3,3,7,7,10,11,11]], expected: 10 }, { args: [[1]], expected: 1 } ],
+      },
+      {
+        title: 'min in rotated with duplicates',
+        difficulty: 'medium',
+        prompt: 'Rotated sorted array with possible duplicates. Return the minimum.',
+        starter: `def find_min_dup(nums):
+    pass`,
+        fn: 'find_min_dup',
+        solutions: [
+          { label: 'binary search with tie-break', code: `def find_min_dup(nums):
+    lo, hi = 0, len(nums) - 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if nums[mid] > nums[hi]:
+            lo = mid + 1
+        elif nums[mid] < nums[hi]:
+            hi = mid
+        else:
+            hi -= 1
+    return nums[lo]` },
+        ],
+        hints: [
+          "Like the unique-value version, but when nums[mid] == nums[hi], you can't decide — just shrink hi by 1.",
+          'Worst-case O(n) due to duplicates.',
+        ],
+        cases: [ { args: [[1,3,5]], expected: 1 }, { args: [[2,2,2,0,1]], expected: 0 }, { args: [[3,3,1,3]], expected: 1 }, { args: [[10,1,10,10,10]], expected: 1 } ],
+      },
+      {
+        title: 'find first and last position',
+        difficulty: 'medium',
+        prompt: 'Sorted array. Return [first_index, last_index] of <code>target</code>. <code>[-1,-1]</code> if missing. O(log n).',
+        starter: `def search_range(nums, target):
+    pass`,
+        fn: 'search_range',
+        solutions: [
+          { label: 'two binary searches', code: `def search_range(nums, target):
+    def lower():
+        lo, hi = 0, len(nums)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if nums[mid] < target:
+                lo = mid + 1
+            else:
+                hi = mid
+        return lo
+    def upper():
+        lo, hi = 0, len(nums)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if nums[mid] <= target:
+                lo = mid + 1
+            else:
+                hi = mid
+        return lo
+    l = lower()
+    if l == len(nums) or nums[l] != target:
+        return [-1, -1]
+    return [l, upper() - 1]` },
+          { label: 'bisect', code: `from bisect import bisect_left, bisect_right
+
+def search_range(nums, target):
+    l = bisect_left(nums, target)
+    r = bisect_right(nums, target) - 1
+    if l > r:
+        return [-1, -1]
+    return [l, r]` },
+        ],
+        hints: [
+          'Two binary searches: lower_bound (first index with value >= target) and upper_bound (first index with value > target).',
+          'If lower index is out of range or value != target, return [-1,-1].',
+        ],
+        cases: [ { args: [[5,7,7,8,8,10], 8], expected: [3,4] }, { args: [[5,7,7,8,8,10], 6], expected: [-1,-1] }, { args: [[], 0], expected: [-1,-1] }, { args: [[1], 1], expected: [0,0] } ],
       },
     ],
   },
@@ -1485,6 +2391,285 @@ def count_nodes(root):
           { args: [[3, [9, null, null], [20, [15, null, null], [7, null, null]]]], expected: 5 },
           { args: [[1, [2, [4, null, null], null], [3, null, null]]], expected: 4 },
         ],
+      },
+    ,
+      {
+        title: 'min depth of binary tree',
+        difficulty: 'easy',
+        prompt: 'Return the minimum number of nodes from root to nearest leaf. Same nested-list format.',
+        starter: `def min_depth(root):
+    pass`,
+        fn: 'min_depth',
+        solutions: [
+          { label: 'recursive', code: `def min_depth(root):
+    if root is None:
+        return 0
+    _, left, right = root
+    if left is None and right is None:
+        return 1
+    if left is None:
+        return 1 + min_depth(right)
+    if right is None:
+        return 1 + min_depth(left)
+    return 1 + min(min_depth(left), min_depth(right))` },
+          { label: 'BFS early exit', code: `from collections import deque
+
+def min_depth(root):
+    if root is None:
+        return 0
+    q = deque([(root, 1)])
+    while q:
+        node, d = q.popleft()
+        _, l, r = node
+        if l is None and r is None:
+            return d
+        if l is not None: q.append((l, d + 1))
+        if r is not None: q.append((r, d + 1))` },
+        ],
+        hints: [
+          "A leaf has both children None. Don't count a missing child as depth 1.",
+          'If one child is None, recurse only into the other.',
+          'BFS gives an early-exit at the first leaf.',
+        ],
+        cases: [ { args: [null], expected: 0 }, { args: [[1, null, [2, null, [3, null, [4, null, null]]]]], expected: 4 }, { args: [[3, [9, null, null], [20, [15, null, null], [7, null, null]]]], expected: 2 }, { args: [[1, [2, null, null], null]], expected: 2 } ],
+      },
+      {
+        title: 'has path sum',
+        difficulty: 'easy',
+        prompt: 'Return True if the tree has a root-to-leaf path whose values sum to <code>target</code>.',
+        starter: `def has_path_sum(root, target):
+    pass`,
+        fn: 'has_path_sum',
+        solutions: [
+          { label: 'recursive', code: `def has_path_sum(root, target):
+    if root is None:
+        return False
+    val, left, right = root
+    if left is None and right is None:
+        return val == target
+    return has_path_sum(left, target - val) or has_path_sum(right, target - val)` },
+        ],
+        hints: [
+          'Base: None -> False (no path through nothing).',
+          'Leaf (both children None) -> return val == target.',
+          'Else recurse with target - val.',
+        ],
+        cases: [ { args: [[5, [4, [11, [7, null, null], [2, null, null]], null], [8, [13, null, null], [4, null, [1, null, null]]]], 22], expected: true }, { args: [[1, [2, null, null], [3, null, null]], 5], expected: false }, { args: [null, 0], expected: false }, { args: [[1, null, null], 1], expected: true } ],
+      },
+      {
+        title: 'level order traversal',
+        difficulty: 'medium',
+        prompt: 'Return values level-by-level, as a list of lists.',
+        starter: `def level_order(root):
+    pass`,
+        fn: 'level_order',
+        solutions: [
+          { label: 'BFS by level', code: `from collections import deque
+
+def level_order(root):
+    if root is None:
+        return []
+    out = []
+    q = deque([root])
+    while q:
+        level = []
+        for _ in range(len(q)):
+            node = q.popleft()
+            val, l, r = node
+            level.append(val)
+            if l is not None: q.append(l)
+            if r is not None: q.append(r)
+        out.append(level)
+    return out` },
+        ],
+        hints: [
+          'BFS with a queue. Process one level at a time using <code>len(q)</code> snapshot.',
+          "Collect each level's values, then push children.",
+        ],
+        cases: [ { args: [[3, [9, null, null], [20, [15, null, null], [7, null, null]]]], expected: [[3],[9,20],[15,7]] }, { args: [[1, null, null]], expected: [[1]] }, { args: [null], expected: [] } ],
+      },
+      {
+        title: 'symmetric tree',
+        difficulty: 'easy',
+        prompt: 'Return True if the tree is a mirror of itself (left subtree mirrors right).',
+        starter: `def is_symmetric(root):
+    pass`,
+        fn: 'is_symmetric',
+        solutions: [
+          { label: 'recursive mirror', code: `def is_symmetric(root):
+    def mirror(a, b):
+        if a is None and b is None:
+            return True
+        if a is None or b is None:
+            return False
+        return a[0] == b[0] and mirror(a[1], b[2]) and mirror(a[2], b[1])
+    if root is None:
+        return True
+    return mirror(root[1], root[2])` },
+        ],
+        hints: [
+          'Helper compares two subtrees as mirrors.',
+          'Mirror condition: a.val == b.val, mirror(a.left, b.right), mirror(a.right, b.left).',
+        ],
+        cases: [ { args: [[1, [2, [3, null, null], [4, null, null]], [2, [4, null, null], [3, null, null]]]], expected: true }, { args: [[1, [2, null, [3, null, null]], [2, null, [3, null, null]]]], expected: false }, { args: [null], expected: true } ],
+      },
+      {
+        title: 'balanced binary tree',
+        difficulty: 'easy',
+        prompt: "Return True if the tree is height-balanced: every node's two subtrees differ in height by at most 1.",
+        starter: `def is_balanced(root):
+    pass`,
+        fn: 'is_balanced',
+        solutions: [
+          { label: 'height + flag', code: `def is_balanced(root):
+    def height(node):
+        if node is None:
+            return 0
+        l = height(node[1])
+        if l == -1: return -1
+        r = height(node[2])
+        if r == -1: return -1
+        if abs(l - r) > 1:
+            return -1
+        return 1 + max(l, r)
+    return height(root) != -1` },
+        ],
+        hints: [
+          "Return both 'balanced?' and 'height' from a helper.",
+          'Or signal imbalance with height = -1 and short-circuit.',
+        ],
+        cases: [ { args: [[3, [9, null, null], [20, [15, null, null], [7, null, null]]]], expected: true }, { args: [[1, [2, [3, [4, null, null], [4, null, null]], [3, null, null]], [2, null, null]]], expected: false }, { args: [null], expected: true } ],
+      },
+      {
+        title: 'diameter of binary tree',
+        difficulty: 'easy',
+        prompt: "Return the length (in edges) of the longest path between any two nodes. Path doesn't need to pass through root.",
+        starter: `def diameter(root):
+    pass`,
+        fn: 'diameter',
+        solutions: [
+          { label: 'DFS with shared state', code: `def diameter(root):
+    best = [0]
+    def height(node):
+        if node is None:
+            return 0
+        l = height(node[1])
+        r = height(node[2])
+        best[0] = max(best[0], l + r)
+        return 1 + max(l, r)
+    height(root)
+    return best[0]` },
+        ],
+        hints: [
+          'DFS returning height. At each node, candidate diameter = left_height + right_height.',
+          'Track global best across the recursion.',
+        ],
+        cases: [ { args: [[1, [2, [4, null, null], [5, null, null]], [3, null, null]]], expected: 3 }, { args: [[1, [2, null, null], null]], expected: 1 }, { args: [null], expected: 0 }, { args: [[1, null, null]], expected: 0 } ],
+      },
+      {
+        title: 'lowest common ancestor (BST)',
+        difficulty: 'medium',
+        prompt: 'Given a BST and two values <code>p</code> and <code>q</code>, return the value of their lowest common ancestor.',
+        starter: `def lowest_common_ancestor(root, p, q):
+    pass`,
+        fn: 'lowest_common_ancestor',
+        solutions: [
+          { label: 'iterative descent', code: `def lowest_common_ancestor(root, p, q):
+    node = root
+    while node:
+        val, left, right = node
+        if p < val and q < val:
+            node = left
+        elif p > val and q > val:
+            node = right
+        else:
+            return val` },
+        ],
+        hints: [
+          'BST property: if both p and q are smaller than root, LCA is in the left subtree.',
+          'If both larger, go right. Else split happens here — root is the LCA.',
+        ],
+        cases: [ { args: [[6, [2, [0, null, null], [4, [3, null, null], [5, null, null]]], [8, [7, null, null], [9, null, null]]], 2, 8], expected: 6 }, { args: [[6, [2, [0, null, null], [4, [3, null, null], [5, null, null]]], [8, [7, null, null], [9, null, null]]], 2, 4], expected: 2 }, { args: [[2, [1, null, null], null], 1, 2], expected: 2 } ],
+      },
+      {
+        title: 'sum of left leaves',
+        difficulty: 'easy',
+        prompt: 'Return the sum of values of all <em>left</em> leaves in the tree.',
+        starter: `def sum_left_leaves(root):
+    pass`,
+        fn: 'sum_left_leaves',
+        solutions: [
+          { label: 'recursive with flag', code: `def sum_left_leaves(root):
+    def helper(node, is_left):
+        if node is None:
+            return 0
+        val, l, r = node
+        if l is None and r is None and is_left:
+            return val
+        return helper(l, True) + helper(r, False)
+    return helper(root, False)` },
+        ],
+        hints: [
+          "Recurse, but pass a flag 'I am a left child'.",
+          'When you reach a leaf AND it is a left child, add to total.',
+        ],
+        cases: [ { args: [[3, [9, null, null], [20, [15, null, null], [7, null, null]]]], expected: 24 }, { args: [[1, null, null]], expected: 0 }, { args: [null], expected: 0 }, { args: [[1, [2, null, null], null]], expected: 2 } ],
+      },
+      {
+        title: 'count paths with target sum',
+        difficulty: 'medium',
+        prompt: 'Count root-to-node downward paths (need not start at root or end at a leaf) whose values sum to <code>target</code>.',
+        starter: `def path_sum_count(root, target):
+    pass`,
+        fn: 'path_sum_count',
+        solutions: [
+          { label: 'prefix sum hashmap', code: `def path_sum_count(root, target):
+    counts = {0: 1}
+    def dfs(node, running):
+        if node is None:
+            return 0
+        val, l, r = node
+        running += val
+        found = counts.get(running - target, 0)
+        counts[running] = counts.get(running, 0) + 1
+        found += dfs(l, running) + dfs(r, running)
+        counts[running] -= 1
+        return found
+    return dfs(root, 0)` },
+        ],
+        hints: [
+          'Prefix-sum trick: for each node, store running sum from root.',
+          'Look up how many earlier running sums equal (current - target) in a hashmap.',
+          'Backtrack the hashmap entry when leaving the node.',
+        ],
+        cases: [ { args: [[10, [5, [3, [3, null, null], [-2, null, null]], [2, null, [1, null, null]]], [-3, null, [11, null, null]]], 8], expected: 3 }, { args: [null, 0], expected: 0 }, { args: [[1, null, null], 1], expected: 1 } ],
+      },
+      {
+        title: 'kth smallest in BST',
+        difficulty: 'medium',
+        prompt: 'Given a BST and integer <code>k</code>, return the kth smallest value.',
+        starter: `def kth_smallest(root, k):
+    pass`,
+        fn: 'kth_smallest',
+        solutions: [
+          { label: 'iterative in-order', code: `def kth_smallest(root, k):
+    stack = []
+    node = root
+    while stack or node is not None:
+        while node is not None:
+            stack.append(node)
+            node = node[1]
+        node = stack.pop()
+        k -= 1
+        if k == 0:
+            return node[0]
+        node = node[2]` },
+        ],
+        hints: [
+          'In-order traversal of a BST yields values in sorted order.',
+          'Stop at the kth visited node.',
+        ],
+        cases: [ { args: [[3, [1, null, [2, null, null]], [4, null, null]], 1], expected: 1 }, { args: [[5, [3, [2, [1, null, null], null], [4, null, null]], [6, null, null]], 3], expected: 3 }, { args: [[1, null, null], 1], expected: 1 } ],
       },
     ],
   },
@@ -1721,6 +2906,352 @@ def max_area(grid):
           { args: [[[1,1],[1,1]]], expected: 4 },
         ],
       },
+    ,
+      {
+        title: 'course schedule (can finish)',
+        difficulty: 'medium',
+        prompt: "<code>numCourses</code> labeled 0..n-1 with prerequisite pairs <code>[a, b]</code> meaning 'a depends on b'. Return True if you can finish all courses (no cycles).",
+        starter: `def can_finish(num_courses, prereqs):
+    pass`,
+        fn: 'can_finish',
+        solutions: [
+          { label: "Kahn's BFS", code: `from collections import defaultdict, deque
+
+def can_finish(num_courses, prereqs):
+    g = defaultdict(list)
+    indeg = [0] * num_courses
+    for a, b in prereqs:
+        g[b].append(a)
+        indeg[a] += 1
+    q = deque(i for i in range(num_courses) if indeg[i] == 0)
+    done = 0
+    while q:
+        c = q.popleft()
+        done += 1
+        for nxt in g[c]:
+            indeg[nxt] -= 1
+            if indeg[nxt] == 0:
+                q.append(nxt)
+    return done == num_courses` },
+          { label: 'DFS coloring', code: `from collections import defaultdict
+
+def can_finish(num_courses, prereqs):
+    g = defaultdict(list)
+    for a, b in prereqs:
+        g[b].append(a)
+    color = [0] * num_courses  # 0=white, 1=gray, 2=black
+    def dfs(u):
+        if color[u] == 1: return False
+        if color[u] == 2: return True
+        color[u] = 1
+        for v in g[u]:
+            if not dfs(v): return False
+        color[u] = 2
+        return True
+    return all(dfs(i) for i in range(num_courses))` },
+        ],
+        hints: [
+          'Cycle detection in a directed graph.',
+          "Two approaches: Kahn's BFS topo sort (count finished == n) or DFS with white/gray/black coloring.",
+        ],
+        cases: [ { args: [2, [[1,0]]], expected: true }, { args: [2, [[1,0],[0,1]]], expected: false }, { args: [4, [[1,0],[2,1],[3,2]]], expected: true }, { args: [3, [[0,1],[1,2],[2,0]]], expected: false } ],
+      },
+      {
+        title: 'course schedule order',
+        difficulty: 'medium',
+        prompt: 'Same input. Return any valid completion order, or <code>[]</code> if impossible.',
+        starter: `def find_order(num_courses, prereqs):
+    pass`,
+        fn: 'find_order',
+        solutions: [
+          { label: "Kahn's BFS", code: `from collections import defaultdict, deque
+
+def find_order(num_courses, prereqs):
+    g = defaultdict(list)
+    indeg = [0] * num_courses
+    for a, b in prereqs:
+        g[b].append(a)
+        indeg[a] += 1
+    q = deque(i for i in range(num_courses) if indeg[i] == 0)
+    order = []
+    while q:
+        c = q.popleft()
+        order.append(c)
+        for nxt in g[c]:
+            indeg[nxt] -= 1
+            if indeg[nxt] == 0:
+                q.append(nxt)
+    return order if len(order) == num_courses else []` },
+        ],
+        hints: [
+          "Kahn's BFS: pop nodes with indegree 0, append to order, decrement neighbors.",
+          'If final order length < n, cycle exists.',
+        ],
+        cases: [ { args: [2, [[1,0]]], expected: [0,1] }, { args: [4, [[1,0],[2,0],[3,1],[3,2]]], expected: [0,1,2,3] }, { args: [2, [[0,1],[1,0]]], expected: [] }, { args: [1, []], expected: [0] } ],
+      },
+      {
+        title: 'rotting oranges',
+        difficulty: 'medium',
+        prompt: 'Grid: 0=empty, 1=fresh orange, 2=rotten. Each minute, fresh oranges adjacent (4-dir) to a rotten one become rotten. Return the minutes until none are fresh, or -1 if impossible.',
+        starter: `def oranges_rotting(grid):
+    pass`,
+        fn: 'oranges_rotting',
+        solutions: [
+          { label: 'multi-source BFS', code: `from collections import deque
+
+def oranges_rotting(grid):
+    rows, cols = len(grid), len(grid[0])
+    q = deque()
+    fresh = 0
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 2:
+                q.append((r, c, 0))
+            elif grid[r][c] == 1:
+                fresh += 1
+    minutes = 0
+    while q:
+        r, c, t = q.popleft()
+        minutes = max(minutes, t)
+        for dr, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
+            nr, nc = r+dr, c+dc
+            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
+                grid[nr][nc] = 2
+                fresh -= 1
+                q.append((nr, nc, t + 1))
+    return -1 if fresh else minutes` },
+        ],
+        hints: [
+          'Multi-source BFS from all initially rotten cells.',
+          'Count fresh; BFS distance gives minute they rot.',
+          'Track minute as max over rotting events. If fresh remain at end, -1.',
+        ],
+        cases: [ { args: [[[2,1,1],[1,1,0],[0,1,1]]], expected: 4 }, { args: [[[2,1,1],[0,1,1],[1,0,1]]], expected: -1 }, { args: [[[0,2]]], expected: 0 }, { args: [[[0]]], expected: 0 } ],
+      },
+      {
+        title: 'walls and gates',
+        difficulty: 'medium',
+        prompt: 'Grid: -1=wall, 0=gate, INF (use 2147483647)=empty room. Fill each empty room with the distance to its nearest gate. Mutate in place and return the grid.',
+        starter: `def walls_and_gates(grid):
+    pass`,
+        fn: 'walls_and_gates',
+        solutions: [
+          { label: 'multi-source BFS', code: `from collections import deque
+
+def walls_and_gates(grid):
+    if not grid:
+        return grid
+    rows, cols = len(grid), len(grid[0])
+    INF = 2147483647
+    q = deque()
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 0:
+                q.append((r, c))
+    while q:
+        r, c = q.popleft()
+        for dr, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
+            nr, nc = r+dr, c+dc
+            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == INF:
+                grid[nr][nc] = grid[r][c] + 1
+                q.append((nr, nc))
+    return grid` },
+        ],
+        hints: [
+          'Multi-source BFS from every gate simultaneously.',
+          'Distances propagate outward; first visit is the shortest.',
+        ],
+        cases: [ { args: [[[2147483647,-1,0,2147483647],[2147483647,2147483647,2147483647,-1],[2147483647,-1,2147483647,-1],[0,-1,2147483647,2147483647]]], expected: [[3,-1,0,1],[2,2,1,-1],[1,-1,2,-1],[0,-1,3,4]] }, { args: [[[-1]]], expected: [[-1]] }, { args: [[[0]]], expected: [[0]] } ],
+      },
+      {
+        title: 'surrounded regions',
+        difficulty: 'medium',
+        prompt: "Grid of 'X' and 'O'. Flip every 'O' that is fully surrounded by 'X' on all four sides (and not connected to the border) to 'X'. Mutate and return the grid.",
+        starter: `def solve_regions(board):
+    pass`,
+        fn: 'solve_regions',
+        solutions: [
+          { label: 'border DFS', code: `def solve_regions(board):
+    if not board or not board[0]:
+        return board
+    rows, cols = len(board), len(board[0])
+    def dfs(r, c):
+        if r < 0 or r >= rows or c < 0 or c >= cols or board[r][c] != 'O':
+            return
+        board[r][c] = '#'
+        dfs(r+1, c); dfs(r-1, c); dfs(r, c+1); dfs(r, c-1)
+    for r in range(rows):
+        dfs(r, 0); dfs(r, cols - 1)
+    for c in range(cols):
+        dfs(0, c); dfs(rows - 1, c)
+    for r in range(rows):
+        for c in range(cols):
+            if board[r][c] == 'O':
+                board[r][c] = 'X'
+            elif board[r][c] == '#':
+                board[r][c] = 'O'
+    return board` },
+        ],
+        hints: [
+          "Reverse logic: 'O's connected to the border survive — flood-fill them with a sentinel ('#').",
+          "Then sweep: any remaining 'O' becomes 'X'; any '#' becomes 'O'.",
+        ],
+        cases: [ { args: [[['X','X','X','X'],['X','O','O','X'],['X','X','O','X'],['X','O','X','X']]], expected: [['X','X','X','X'],['X','X','X','X'],['X','X','X','X'],['X','O','X','X']] }, { args: [[['O']]], expected: [['O']] }, { args: [[['X','X'],['X','X']]], expected: [['X','X'],['X','X']] } ],
+      },
+      {
+        title: 'number of provinces',
+        difficulty: 'medium',
+        prompt: 'Given a square matrix where <code>isConnected[i][j] == 1</code> means cities i and j are directly connected, return the number of connected components (provinces).',
+        starter: `def find_circle_num(is_connected):
+    pass`,
+        fn: 'find_circle_num',
+        solutions: [
+          { label: 'DFS', code: `def find_circle_num(is_connected):
+    n = len(is_connected)
+    visited = [False] * n
+    def dfs(i):
+        visited[i] = True
+        for j in range(n):
+            if is_connected[i][j] == 1 and not visited[j]:
+                dfs(j)
+    count = 0
+    for i in range(n):
+        if not visited[i]:
+            count += 1
+            dfs(i)
+    return count` },
+          { label: 'Union-Find', code: `def find_circle_num(is_connected):
+    n = len(is_connected)
+    parent = list(range(n))
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb: parent[ra] = rb
+    for i in range(n):
+        for j in range(i + 1, n):
+            if is_connected[i][j] == 1:
+                union(i, j)
+    return len({find(i) for i in range(n)})` },
+        ],
+        hints: [
+          'Union-Find on city indices, or DFS over unvisited cities.',
+          'Each new DFS root is a new province.',
+        ],
+        cases: [ { args: [[[1,1,0],[1,1,0],[0,0,1]]], expected: 2 }, { args: [[[1,0,0],[0,1,0],[0,0,1]]], expected: 3 }, { args: [[[1]]], expected: 1 }, { args: [[[1,1],[1,1]]], expected: 1 } ],
+      },
+      {
+        title: 'keys and rooms',
+        difficulty: 'medium',
+        prompt: 'Rooms 0..n-1. Room 0 is unlocked; each room contains a list of keys to other rooms. Return True if you can visit every room.',
+        starter: `def can_visit_all_rooms(rooms):
+    pass`,
+        fn: 'can_visit_all_rooms',
+        solutions: [
+          { label: 'DFS', code: `def can_visit_all_rooms(rooms):
+    visited = set()
+    def dfs(r):
+        if r in visited: return
+        visited.add(r)
+        for k in rooms[r]:
+            dfs(k)
+    dfs(0)
+    return len(visited) == len(rooms)` },
+        ],
+        hints: [
+          'BFS or DFS from room 0. Track visited rooms.',
+          'Return True iff visited count == n.',
+        ],
+        cases: [ { args: [[[1],[2],[3],[]]], expected: true }, { args: [[[1,3],[3,0,1],[2],[0]]], expected: false }, { args: [[[]]], expected: true } ],
+      },
+      {
+        title: 'clone graph (adjacency list)',
+        difficulty: 'medium',
+        prompt: 'Given an adjacency list <code>graph</code> (graph[i] = neighbors of node i), return a deep copy as another adjacency list. (Nodes are integers; deep copy means a brand-new list of lists.)',
+        starter: `def clone_graph(graph):
+    pass`,
+        fn: 'clone_graph',
+        solutions: [
+          { label: 'comprehension', code: `def clone_graph(graph):
+    return [list(adj) for adj in graph]` },
+        ],
+        hints: [
+          "Just copy each inner list. Don't return the same list references.",
+          'Use <code>[list(adj) for adj in graph]</code>.',
+        ],
+        cases: [ { args: [[[1,2],[0,2],[0,1]]], expected: [[1,2],[0,2],[0,1]] }, { args: [[[]]], expected: [[]] }, { args: [[]], expected: [] } ],
+      },
+      {
+        title: 'is graph bipartite',
+        difficulty: 'medium',
+        prompt: 'Adjacency list. Return True if you can 2-color the graph so no edge connects same-color vertices.',
+        starter: `def is_bipartite(graph):
+    pass`,
+        fn: 'is_bipartite',
+        solutions: [
+          { label: 'BFS coloring', code: `from collections import deque
+
+def is_bipartite(graph):
+    color = [0] * len(graph)
+    for start in range(len(graph)):
+        if color[start] != 0:
+            continue
+        color[start] = 1
+        q = deque([start])
+        while q:
+            u = q.popleft()
+            for v in graph[u]:
+                if color[v] == 0:
+                    color[v] = -color[u]
+                    q.append(v)
+                elif color[v] == color[u]:
+                    return False
+    return True` },
+        ],
+        hints: [
+          'BFS each component. Assign alternating colors.',
+          'If you try to color a neighbor the same as the current node, fail.',
+        ],
+        cases: [ { args: [[[1,3],[0,2],[1,3],[0,2]]], expected: true }, { args: [[[1,2,3],[0,2],[0,1,3],[0,2]]], expected: false }, { args: [[[]]], expected: true } ],
+      },
+      {
+        title: 'network delay time (Dijkstra)',
+        difficulty: 'medium',
+        prompt: 'Directed weighted edges <code>times = [[u,v,w],...]</code>. Signal sent from node <code>k</code> (1-indexed) to all <code>n</code> nodes. Return the time for the last node to receive it, or -1 if some node is unreachable.',
+        starter: `def network_delay(times, n, k):
+    pass`,
+        fn: 'network_delay',
+        solutions: [
+          { label: 'Dijkstra (heap)', code: `import heapq
+from collections import defaultdict
+
+def network_delay(times, n, k):
+    g = defaultdict(list)
+    for u, v, w in times:
+        g[u].append((v, w))
+    dist = {i: float('inf') for i in range(1, n + 1)}
+    dist[k] = 0
+    pq = [(0, k)]
+    while pq:
+        d, u = heapq.heappop(pq)
+        if d > dist[u]: continue
+        for v, w in g[u]:
+            nd = d + w
+            if nd < dist[v]:
+                dist[v] = nd
+                heapq.heappush(pq, (nd, v))
+    m = max(dist.values())
+    return -1 if m == float('inf') else m` },
+        ],
+        hints: [
+          'Standard Dijkstra from node k.',
+          'Result = max of final distances if all reachable, else -1.',
+        ],
+        cases: [ { args: [[[2,1,1],[2,3,1],[3,4,1]], 4, 2], expected: 2 }, { args: [[[1,2,1]], 2, 1], expected: 1 }, { args: [[[1,2,1]], 2, 2], expected: -1 } ],
+      },
     ],
   },
   {
@@ -1880,6 +3411,238 @@ def max_area(grid):
           { args: ['merge_sort'], expected: 'O(n)' },
           { args: ['in_place_reverse'], expected: 'O(1)' },
         ],
+      },
+    ,
+      {
+        title: 'identify space complexity',
+        difficulty: 'easy',
+        prompt: "Implement <code>space_of(label)</code>. Labels: <code>'iterative_count'</code>, <code>'recursive_count'</code>, <code>'hashset_dedup'</code>, <code>'two_pointers'</code>. Return one of <code>'O(1)'</code>, <code>'O(n)'</code>.",
+        starter: `def space_of(label):
+    pass`,
+        fn: 'space_of',
+        solutions: [
+          { label: 'dict lookup', code: `def space_of(label):
+    return {
+        'iterative_count': 'O(1)',
+        'recursive_count': 'O(n)',
+        'hashset_dedup': 'O(n)',
+        'two_pointers': 'O(1)',
+    }[label]` },
+        ],
+        hints: [
+          'Iterative counters and two-pointer scans use constant extra space.',
+          'Recursion adds stack frames proportional to depth.',
+          'Hashset dedup stores up to n elements.',
+        ],
+        cases: [ { args: ['iterative_count'], expected: 'O(1)' }, { args: ['recursive_count'], expected: 'O(n)' }, { args: ['hashset_dedup'], expected: 'O(n)' }, { args: ['two_pointers'], expected: 'O(1)' } ],
+      },
+      {
+        title: 'optimize me — palindrome check',
+        difficulty: 'easy',
+        prompt: 'Naive palindrome check builds a reversed string (O(n) space). Rewrite as O(1) extra space.',
+        starter: `def is_palindrome(s):
+    pass`,
+        fn: 'is_palindrome',
+        solutions: [
+          { label: 'two pointers', note: 'O(n) time, O(1) space.', code: `def is_palindrome(s):
+    l, r = 0, len(s) - 1
+    while l < r:
+        if s[l] != s[r]:
+            return False
+        l += 1
+        r -= 1
+    return True` },
+          { label: 'slice (O(n) space)', note: 'Educational baseline. Allocates a new string.', code: `def is_palindrome(s):
+    return s == s[::-1]` },
+        ],
+        hints: [
+          'Two pointers from both ends.',
+          'Compare and converge; mismatch -> False.',
+        ],
+        cases: [ { args: ['racecar'], expected: true }, { args: ['hello'], expected: false }, { args: [''], expected: true }, { args: ['a'], expected: true }, { args: ['ab'], expected: false } ],
+      },
+      {
+        title: 'optimize me — anagram check',
+        difficulty: 'easy',
+        prompt: 'Naive anagram check sorts both strings (O(n log n)). Make it O(n).',
+        starter: `def is_anagram(a, b):
+    pass`,
+        fn: 'is_anagram',
+        solutions: [
+          { label: 'Counter', note: 'O(n) time, O(k) space (k = alphabet size).', code: `from collections import Counter
+
+def is_anagram(a, b):
+    return Counter(a) == Counter(b)` },
+          { label: 'sort', note: 'O(n log n). Baseline.', code: `def is_anagram(a, b):
+    return sorted(a) == sorted(b)` },
+        ],
+        hints: [
+          'Compare Counter(a) == Counter(b) — O(n) time and space.',
+          'Length mismatch -> early False.',
+        ],
+        cases: [ { args: ['anagram','nagaram'], expected: true }, { args: ['rat','car'], expected: false }, { args: ['',''], expected: true }, { args: ['a','aa'], expected: false } ],
+      },
+      {
+        title: 'optimize me — fibonacci',
+        difficulty: 'easy',
+        prompt: 'Naive recursive fib is O(2^n). Make it O(n).',
+        starter: `def fib(n):
+    pass`,
+        fn: 'fib',
+        solutions: [
+          { label: 'iterative', note: 'O(n) time, O(1) space.', code: `def fib(n):
+    if n < 2:
+        return n
+    a, b = 0, 1
+    for _ in range(n - 1):
+        a, b = b, a + b
+    return b` },
+          { label: 'memoized recursion', note: 'O(n) time, O(n) space.', code: `from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fib(n):
+    return n if n < 2 else fib(n - 1) + fib(n - 2)` },
+        ],
+        hints: [
+          'Iterative with two rolling variables.',
+          'Or memoize the recursive version (still O(n) time, O(n) space).',
+        ],
+        cases: [ { args: [0], expected: 0 }, { args: [1], expected: 1 }, { args: [10], expected: 55 }, { args: [30], expected: 832040 } ],
+      },
+      {
+        title: 'identify recurrence complexity',
+        difficulty: 'medium',
+        prompt: "Implement <code>recurrence_complexity(label)</code>. Labels: <code>'merge_sort'</code> (T(n)=2T(n/2)+O(n)), <code>'binary_search'</code> (T(n)=T(n/2)+O(1)), <code>'fib_naive'</code> (T(n)=T(n-1)+T(n-2)+O(1)), <code>'tree_traversal'</code> (T(n)=2T(n/2)+O(1)). Return the time complexity.",
+        starter: `def recurrence_complexity(label):
+    pass`,
+        fn: 'recurrence_complexity',
+        solutions: [
+          { label: 'dict', code: `def recurrence_complexity(label):
+    return {
+        'merge_sort': 'O(n log n)',
+        'binary_search': 'O(log n)',
+        'fib_naive': 'O(2^n)',
+        'tree_traversal': 'O(n)',
+    }[label]` },
+        ],
+        hints: [
+          'Apply the Master Theorem for the first three.',
+          'Tree traversal visits every node once -> O(n).',
+        ],
+        cases: [ { args: ['merge_sort'], expected: 'O(n log n)' }, { args: ['binary_search'], expected: 'O(log n)' }, { args: ['fib_naive'], expected: 'O(2^n)' }, { args: ['tree_traversal'], expected: 'O(n)' } ],
+      },
+      {
+        title: 'identify sort complexity',
+        difficulty: 'easy',
+        prompt: "<code>sort_complexity(name)</code>. Names: <code>'quicksort_avg'</code>, <code>'quicksort_worst'</code>, <code>'mergesort'</code>, <code>'heapsort'</code>, <code>'bubblesort'</code>, <code>'insertion_best'</code>, <code>'counting_sort'</code>.",
+        starter: `def sort_complexity(name):
+    pass`,
+        fn: 'sort_complexity',
+        solutions: [
+          { label: 'dict', code: `def sort_complexity(name):
+    return {
+        'quicksort_avg': 'O(n log n)',
+        'quicksort_worst': 'O(n^2)',
+        'mergesort': 'O(n log n)',
+        'heapsort': 'O(n log n)',
+        'bubblesort': 'O(n^2)',
+        'insertion_best': 'O(n)',
+        'counting_sort': 'O(n + k)',
+    }[name]` },
+        ],
+        hints: [
+          'Comparison sorts are bounded by O(n log n).',
+          'Quicksort hits O(n²) on already-sorted input with bad pivot choice.',
+          'Counting sort is non-comparison; depends on range k.',
+        ],
+        cases: [ { args: ['quicksort_avg'], expected: 'O(n log n)' }, { args: ['quicksort_worst'], expected: 'O(n^2)' }, { args: ['mergesort'], expected: 'O(n log n)' }, { args: ['heapsort'], expected: 'O(n log n)' }, { args: ['bubblesort'], expected: 'O(n^2)' }, { args: ['insertion_best'], expected: 'O(n)' }, { args: ['counting_sort'], expected: 'O(n + k)' } ],
+      },
+      {
+        title: 'big-O of nested loops',
+        difficulty: 'easy',
+        prompt: "<code>big_o_loops(structure)</code>. Structures: <code>'single'</code> (1 loop), <code>'double'</code> (i, j independent), <code>'triangular'</code> (j < i), <code>'log'</code> (halving), <code>'log_squared'</code> (two halvings nested).",
+        starter: `def big_o_loops(structure):
+    pass`,
+        fn: 'big_o_loops',
+        solutions: [
+          { label: 'dict', code: `def big_o_loops(structure):
+    return {
+        'single': 'O(n)',
+        'double': 'O(n^2)',
+        'triangular': 'O(n^2)',
+        'log': 'O(log n)',
+        'log_squared': 'O((log n)^2)',
+    }[structure]` },
+        ],
+        hints: [
+          'Triangular still does ~n²/2 operations -> O(n²).',
+          'Each halving loop is O(log n); nesting multiplies.',
+        ],
+        cases: [ { args: ['single'], expected: 'O(n)' }, { args: ['double'], expected: 'O(n^2)' }, { args: ['triangular'], expected: 'O(n^2)' }, { args: ['log'], expected: 'O(log n)' }, { args: ['log_squared'], expected: 'O((log n)^2)' } ],
+      },
+      {
+        title: 'in-place check',
+        difficulty: 'easy',
+        prompt: "<code>is_in_place(algo)</code> returns True if the named algorithm uses O(1) extra space. Algorithms: <code>'mergesort'</code>, <code>'quicksort'</code>, <code>'reverse_array'</code>, <code>'count_chars'</code>.",
+        starter: `def is_in_place(algo):
+    pass`,
+        fn: 'is_in_place',
+        solutions: [
+          { label: 'set', code: `def is_in_place(algo):
+    return algo in {'quicksort', 'reverse_array'}` },
+        ],
+        hints: [
+          'Mergesort needs a temp array of size n.',
+          'Quicksort partitions in place (recursion stack aside).',
+          'Reverse-in-place swaps with O(1) extra.',
+          'Counting chars needs a dict (size depends on alphabet, but it is O(k)).',
+        ],
+        cases: [ { args: ['mergesort'], expected: false }, { args: ['quicksort'], expected: true }, { args: ['reverse_array'], expected: true }, { args: ['count_chars'], expected: false } ],
+      },
+      {
+        title: 'optimize me — contains pair sum',
+        difficulty: 'easy',
+        prompt: "Naive 'does any pair sum to target?' is O(n²). Make it O(n).",
+        starter: `def has_pair_sum(nums, target):
+    pass`,
+        fn: 'has_pair_sum',
+        solutions: [
+          { label: 'hashset', note: 'O(n) time and space.', code: `def has_pair_sum(nums, target):
+    seen = set()
+    for n in nums:
+        if target - n in seen:
+            return True
+        seen.add(n)
+    return False` },
+        ],
+        hints: [
+          'Hashset of seen values.',
+          'For each n, check if (target - n) is already in the set.',
+        ],
+        cases: [ { args: [[1,2,3,4], 5], expected: true }, { args: [[1,2,3], 7], expected: false }, { args: [[], 0], expected: false }, { args: [[3,3], 6], expected: true } ],
+      },
+      {
+        title: 'identify amortized complexity',
+        difficulty: 'medium',
+        prompt: "<code>amortized(op)</code>. Operations: <code>'list_append'</code> (Python), <code>'dict_insert'</code> (Python avg), <code>'string_concat_loop'</code>, <code>'deque_append'</code>. Return Big-O for one operation amortized.",
+        starter: `def amortized(op):
+    pass`,
+        fn: 'amortized',
+        solutions: [
+          { label: 'dict', code: `def amortized(op):
+    return {
+        'list_append': 'O(1)',
+        'dict_insert': 'O(1)',
+        'string_concat_loop': 'O(n)',
+        'deque_append': 'O(1)',
+    }[op]` },
+        ],
+        hints: [
+          'Dynamic arrays double on resize -> amortized O(1).',
+          'String concat in a loop is O(n²) total -> O(n) per op.',
+          'Deques are linked, append is O(1).',
+        ],
+        cases: [ { args: ['list_append'], expected: 'O(1)' }, { args: ['dict_insert'], expected: 'O(1)' }, { args: ['string_concat_loop'], expected: 'O(n)' }, { args: ['deque_append'], expected: 'O(1)' } ],
       },
     ],
   },
@@ -2045,6 +3808,228 @@ def flatten(lists):
           { args: [[[1]]], expected: [1] },
         ],
       },
+    ,
+      {
+        title: 'valid anagram',
+        difficulty: 'easy',
+        prompt: 'Return True if <code>t</code> is an anagram of <code>s</code>. Counter equality is the one-liner.',
+        starter: `def valid_anagram(s, t):
+    pass`,
+        fn: 'valid_anagram',
+        solutions: [
+          { label: 'Counter', code: `from collections import Counter
+
+def valid_anagram(s, t):
+    return Counter(s) == Counter(t)` },
+          { label: 'sort', code: `def valid_anagram(s, t):
+    return sorted(s) == sorted(t)` },
+        ],
+        hints: [
+          '<code>Counter(s) == Counter(t)</code>.',
+          'Sorted strings also work but slower.',
+        ],
+        cases: [ { args: ['anagram','nagaram'], expected: true }, { args: ['rat','car'], expected: false }, { args: ['',''], expected: true }, { args: ['a','aa'], expected: false } ],
+      },
+      {
+        title: 'fizz buzz',
+        difficulty: 'easy',
+        prompt: "Return a list of strings 1..n. Multiples of 3 -> 'Fizz'. Multiples of 5 -> 'Buzz'. Multiples of both -> 'FizzBuzz'. Otherwise the number as a string.",
+        starter: `def fizz_buzz(n):
+    pass`,
+        fn: 'fizz_buzz',
+        solutions: [
+          { label: 'comprehension', code: `def fizz_buzz(n):
+    return [
+        'FizzBuzz' if i % 15 == 0
+        else 'Fizz' if i % 3 == 0
+        else 'Buzz' if i % 5 == 0
+        else str(i)
+        for i in range(1, n + 1)
+    ]` },
+          { label: 'string concat', code: `def fizz_buzz(n):
+    out = []
+    for i in range(1, n + 1):
+        s = ('Fizz' if i % 3 == 0 else '') + ('Buzz' if i % 5 == 0 else '')
+        out.append(s or str(i))
+    return out` },
+        ],
+        hints: [
+          'Comprehension with chained ternaries works fine.',
+          "Or build the label by concatenating 'Fizz' if div3 + 'Buzz' if div5, fall back to str(i).",
+        ],
+        cases: [ { args: [3], expected: ['1','2','Fizz'] }, { args: [5], expected: ['1','2','Fizz','4','Buzz'] }, { args: [15], expected: ['1','2','Fizz','4','Buzz','Fizz','7','8','Fizz','Buzz','11','Fizz','13','14','FizzBuzz'] }, { args: [0], expected: [] } ],
+      },
+      {
+        title: 'intersection of two lists',
+        difficulty: 'easy',
+        prompt: 'Return the values that appear in both lists (no duplicates). Any order.',
+        starter: `def intersection(a, b):
+    pass`,
+        fn: 'intersection',
+        solutions: [
+          { label: 'set intersection', code: `def intersection(a, b):
+    return list(set(a) & set(b))` },
+        ],
+        hints: [
+          'Convert both to sets and intersect.',
+          '<code>list(set(a) & set(b))</code>.',
+        ],
+        cases: [ { args: [[1,2,2,1],[2,2]], expected: [2] }, { args: [[4,9,5],[9,4,9,8,4]], expected: [4,9] }, { args: [[],[1]], expected: [] } ],
+        normalize: 'sortPair',
+      },
+      {
+        title: 'missing number 0..n',
+        difficulty: 'easy',
+        prompt: 'Given <code>nums</code> with n distinct numbers from <code>[0, n]</code>, return the missing one.',
+        starter: `def missing_number(nums):
+    pass`,
+        fn: 'missing_number',
+        solutions: [
+          { label: 'sum formula', note: 'O(n) time, O(1) space.', code: `def missing_number(nums):
+    n = len(nums)
+    return n * (n + 1) // 2 - sum(nums)` },
+          { label: 'XOR', note: 'O(n) time, O(1) space; avoids overflow concerns in other languages.', code: `def missing_number(nums):
+    result = len(nums)
+    for i, v in enumerate(nums):
+        result ^= i ^ v
+    return result` },
+        ],
+        hints: [
+          'Sum formula: expected = n*(n+1)//2. Missing = expected - sum(nums).',
+          'Or XOR all indices and values together.',
+        ],
+        cases: [ { args: [[3,0,1]], expected: 2 }, { args: [[0,1]], expected: 2 }, { args: [[9,6,4,2,3,5,7,0,1]], expected: 8 }, { args: [[0]], expected: 1 } ],
+      },
+      {
+        title: 'can form palindrome',
+        difficulty: 'easy',
+        prompt: 'Return True if some permutation of <code>s</code> is a palindrome.',
+        starter: `def can_form_palindrome(s):
+    pass`,
+        fn: 'can_form_palindrome',
+        solutions: [
+          { label: 'Counter', code: `from collections import Counter
+
+def can_form_palindrome(s):
+    counts = Counter(s)
+    return sum(c % 2 for c in counts.values()) <= 1` },
+        ],
+        hints: [
+          'A palindrome has at most one character with an odd count.',
+          'Counter + sum(c % 2 for c in counts.values()) <= 1.',
+        ],
+        cases: [ { args: ['carrace'], expected: true }, { args: ['daily'], expected: false }, { args: [''], expected: true }, { args: ['a'], expected: true }, { args: ['aa'], expected: true } ],
+      },
+      {
+        title: 'merge intervals',
+        difficulty: 'medium',
+        prompt: 'Given a list of intervals <code>[start, end]</code>, merge overlapping ones and return the merged list sorted by start.',
+        starter: `def merge_intervals(intervals):
+    pass`,
+        fn: 'merge_intervals',
+        solutions: [
+          { label: 'sort + walk', code: `def merge_intervals(intervals):
+    if not intervals:
+        return []
+    intervals.sort()
+    out = [intervals[0]]
+    for s, e in intervals[1:]:
+        if s <= out[-1][1]:
+            out[-1][1] = max(out[-1][1], e)
+        else:
+            out.append([s, e])
+    return out` },
+        ],
+        hints: [
+          'Sort by start. Walk through; if current overlaps last merged, extend the end.',
+          'Else append a fresh interval.',
+        ],
+        cases: [ { args: [[[1,3],[2,6],[8,10],[15,18]]], expected: [[1,6],[8,10],[15,18]] }, { args: [[[1,4],[4,5]]], expected: [[1,5]] }, { args: [[[1,4],[0,4]]], expected: [[0,4]] }, { args: [[]], expected: [] } ],
+      },
+      {
+        title: 'length of last word',
+        difficulty: 'easy',
+        prompt: 'Return the length of the last word in <code>s</code> (words separated by spaces).',
+        starter: `def length_of_last_word(s):
+    pass`,
+        fn: 'length_of_last_word',
+        solutions: [
+          { label: 'split + index', code: `def length_of_last_word(s):
+    return len(s.split()[-1])` },
+          { label: 'reverse scan', note: 'O(n) time, O(1) space.', code: `def length_of_last_word(s):
+    i = len(s) - 1
+    while i >= 0 and s[i] == ' ':
+        i -= 1
+    length = 0
+    while i >= 0 and s[i] != ' ':
+        length += 1
+        i -= 1
+    return length` },
+        ],
+        hints: [
+          '<code>s.split()[-1]</code> handles trailing/leading spaces.',
+          'Then return <code>len(...)</code>.',
+        ],
+        cases: [ { args: ['Hello World'], expected: 5 }, { args: ['   fly me   to   the moon  '], expected: 4 }, { args: ['luffy is still joyboy'], expected: 6 }, { args: ['a'], expected: 1 } ],
+      },
+      {
+        title: 'sort by frequency desc',
+        difficulty: 'easy',
+        prompt: 'Sort <code>nums</code> so the most frequent values come first. Ties: smaller value first.',
+        starter: `def freq_sort(nums):
+    pass`,
+        fn: 'freq_sort',
+        solutions: [
+          { label: 'Counter + sort', code: `from collections import Counter
+
+def freq_sort(nums):
+    counts = Counter(nums)
+    return sorted(nums, key=lambda x: (-counts[x], x))` },
+        ],
+        hints: [
+          'Build a Counter, then sort with key = (-count, value).',
+        ],
+        cases: [ { args: [[1,1,2,2,2,3]], expected: [2,2,2,1,1,3] }, { args: [[2,3,1,3,2]], expected: [2,2,3,3,1] }, { args: [[]], expected: [] } ],
+      },
+      {
+        title: 'group by length',
+        difficulty: 'easy',
+        prompt: 'Given a list of words, return a dict mapping each unique length to the list of words with that length (insertion order preserved).',
+        starter: `def group_by_length(words):
+    pass`,
+        fn: 'group_by_length',
+        solutions: [
+          { label: 'defaultdict', code: `from collections import defaultdict
+
+def group_by_length(words):
+    groups = defaultdict(list)
+    for w in words:
+        groups[str(len(w))].append(w)
+    return dict(groups)` },
+        ],
+        hints: [
+          'defaultdict(list). Iterate and append.',
+          'Convert keys to strings to match the expected (object keys).',
+        ],
+        cases: [ { args: [['hi','bye','to','from','no']], expected: {'2':['hi','to','no'],'3':['bye'],'4':['from']} }, { args: [[]], expected: {} } ],
+      },
+      {
+        title: 'longest word',
+        difficulty: 'easy',
+        prompt: 'Return the longest string in <code>words</code>. Ties: return the first one. Empty list -> empty string.',
+        starter: `def longest_word(words):
+    pass`,
+        fn: 'longest_word',
+        solutions: [
+          { label: 'max with key', code: `def longest_word(words):
+    return max(words, key=len, default='')` },
+        ],
+        hints: [
+          "max(words, key=len, default='').",
+          'max picks the first tie automatically.',
+        ],
+        cases: [ { args: [['cat','elephant','dog']], expected: 'elephant' }, { args: [['a','b','c']], expected: 'a' }, { args: [[]], expected: '' }, { args: [['hi','bye']], expected: 'hi' } ],
+      },
     ],
   },
   {
@@ -2175,6 +4160,253 @@ def flatten(lists):
           { args: [[]], expected: [] },
           { args: [['a','b']], expected: ['b','a'] },
         ],
+      },
+    ,
+      {
+        title: 'two sum narrated',
+        difficulty: 'easy',
+        prompt: 'Solve two-sum. While you code, narrate: why you reach for a hashmap, the time/space trade-off vs. brute force, and any edge cases.',
+        starter: `def two_sum_talk(nums, target):
+    # narrate: brute force O(n^2), then hashmap O(n)
+    # narrate: trade-off — extra O(n) space for O(n) time
+    pass`,
+        fn: 'two_sum_talk',
+        solutions: [
+          { label: 'one-pass hashmap', code: `def two_sum_talk(nums, target):
+    seen = {}
+    for i, n in enumerate(nums):
+        if target - n in seen:
+            return [seen[target - n], i]
+        seen[n] = i` },
+        ],
+        hints: [
+          "Out loud: 'brute force is two nested loops, O(n²)'.",
+          "'For each number, I want to know if its complement was seen.'",
+          "'A hashmap from value -> index gives me O(1) lookup.'",
+        ],
+        cases: [ { args: [[2,7,11,15], 9], expected: [0,1] }, { args: [[3,2,4], 6], expected: [1,2] }, { args: [[3,3], 6], expected: [0,1] } ],
+        normalize: 'sortPair',
+      },
+      {
+        title: 'reverse linked list (as list) narrated',
+        difficulty: 'easy',
+        prompt: "Reverse a list of ints (representing a linked list). While you code, talk through the three-pointer dance you'd use on actual linked-list nodes.",
+        starter: `def reverse_list_talk(nums):
+    # narrate the three pointers (prev, curr, next) like a real linked list
+    pass`,
+        fn: 'reverse_list_talk',
+        solutions: [
+          { label: 'slice', code: `def reverse_list_talk(nums):
+    return nums[::-1]` },
+          { label: 'iterative walk', note: 'Mirrors the real linked-list algorithm.', code: `def reverse_list_talk(nums):
+    out = []
+    for n in nums:
+        out.insert(0, n)
+    return out` },
+        ],
+        hints: [
+          "Out loud: 'I'd hold prev=None, curr=head, walk forward and rewire next pointers.'",
+          'For the list version: <code>nums[::-1]</code> is the trivial answer.',
+          "Mention both: 'In real code I'd do it in O(1) extra space iteratively.'",
+        ],
+        cases: [ { args: [[1,2,3]], expected: [3,2,1] }, { args: [[]], expected: [] }, { args: [[1]], expected: [1] } ],
+      },
+      {
+        title: 'binary search narrated',
+        difficulty: 'easy',
+        prompt: 'Implement binary search and narrate every invariant: search space, loop condition, mid calculation pitfalls, return value.',
+        starter: `def bsearch_talk(nums, target):
+    # narrate:
+    #   1) lo and hi are inclusive bounds
+    #   2) (lo + hi) // 2 is fine in Python (no overflow)
+    #   3) shrink range based on comparison
+    pass`,
+        fn: 'bsearch_talk',
+        solutions: [
+          { label: 'inclusive bounds', code: `def bsearch_talk(nums, target):
+    lo, hi = 0, len(nums) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if nums[mid] == target:
+            return mid
+        if nums[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1` },
+        ],
+        hints: [
+          "Out loud: 'I'll use inclusive bounds, so the loop runs while lo <= hi.'",
+          "'Mid uses integer division; in Python overflow is a non-issue.'",
+          "'If I miss, I return -1.'",
+        ],
+        cases: [ { args: [[1,2,3,4,5], 3], expected: 2 }, { args: [[1,2,3,4,5], 0], expected: -1 }, { args: [[], 1], expected: -1 } ],
+      },
+      {
+        title: 'fibonacci narrated',
+        difficulty: 'easy',
+        prompt: 'Compute the nth Fibonacci number. Narrate why you avoid the naive recursion and what trade-off you pick.',
+        starter: `def fib_talk(n):
+    # narrate: naive recursive fib is O(2^n) — too slow
+    # iterative is O(n) time and O(1) space
+    pass`,
+        fn: 'fib_talk',
+        solutions: [
+          { label: 'iterative', code: `def fib_talk(n):
+    if n < 2:
+        return n
+    a, b = 0, 1
+    for _ in range(n - 1):
+        a, b = b, a + b
+    return b` },
+        ],
+        hints: [
+          "Out loud: 'Naive recursion redoes the same subproblems exponentially.'",
+          "'I'll go iterative with two rolling variables — O(n) time, O(1) space.'",
+        ],
+        cases: [ { args: [0], expected: 0 }, { args: [1], expected: 1 }, { args: [7], expected: 13 }, { args: [20], expected: 6765 } ],
+      },
+      {
+        title: 'palindrome check narrated',
+        difficulty: 'easy',
+        prompt: 'Return True if a string is a palindrome (ignore case, ignore non-alphanumeric). Talk through why two pointers beats reverse-string in space.',
+        starter: `def is_palindrome_talk(s):
+    # narrate: two pointers, skip non-alphanumeric, compare lowered chars
+    pass`,
+        fn: 'is_palindrome_talk',
+        solutions: [
+          { label: 'two pointers', code: `def is_palindrome_talk(s):
+    l, r = 0, len(s) - 1
+    while l < r:
+        while l < r and not s[l].isalnum(): l += 1
+        while l < r and not s[r].isalnum(): r -= 1
+        if s[l].lower() != s[r].lower():
+            return False
+        l += 1; r -= 1
+    return True` },
+        ],
+        hints: [
+          "Out loud: 'I'll skip non-alphanumeric and compare lowercase chars from both ends.'",
+          "'Two pointers gives O(n) time and O(1) extra space.'",
+        ],
+        cases: [ { args: ['A man, a plan, a canal: Panama'], expected: true }, { args: ['race a car'], expected: false }, { args: [' '], expected: true }, { args: [''], expected: true } ],
+      },
+      {
+        title: 'max in array narrated',
+        difficulty: 'easy',
+        prompt: 'Return the maximum value in a non-empty list. While you code, narrate the invariant of the running max.',
+        starter: `def find_max_talk(nums):
+    # narrate: 'best so far' invariant; one pass; O(n)
+    pass`,
+        fn: 'find_max_talk',
+        solutions: [
+          { label: 'manual loop', code: `def find_max_talk(nums):
+    best = nums[0]
+    for n in nums[1:]:
+        if n > best:
+            best = n
+    return best` },
+          { label: 'builtin', note: 'Mention this and pick one consciously.', code: `def find_max_talk(nums):
+    return max(nums)` },
+        ],
+        hints: [
+          "Out loud: 'I track best, start it at the first element.'",
+          "'Walk through and update if I see a larger value.'",
+        ],
+        cases: [ { args: [[3,1,4,1,5,9,2,6]], expected: 9 }, { args: [[-1,-2,-3]], expected: -1 }, { args: [[42]], expected: 42 } ],
+      },
+      {
+        title: 'count vowels narrated',
+        difficulty: 'easy',
+        prompt: 'Count vowels in a string (case-insensitive). Narrate why a set lookup is O(1).',
+        starter: `def count_vowels_talk(s):
+    # narrate: O(n) scan; set membership is O(1)
+    pass`,
+        fn: 'count_vowels_talk',
+        solutions: [
+          { label: 'set + sum', code: `def count_vowels_talk(s):
+    vowels = set('aeiou')
+    return sum(1 for ch in s.lower() if ch in vowels)` },
+        ],
+        hints: [
+          "Out loud: 'I'll define a set of vowels because <code>in set</code> is O(1).'",
+          "'I'll lowercase the input so I check upper and lower at once.'",
+        ],
+        cases: [ { args: ['hello'], expected: 2 }, { args: ['Programming'], expected: 3 }, { args: [''], expected: 0 }, { args: ['xyz'], expected: 0 } ],
+      },
+      {
+        title: 'sum array narrated',
+        difficulty: 'easy',
+        prompt: 'Sum a list of integers. Discuss why builtin <code>sum</code> can win over a manual loop in Python.',
+        starter: `def sum_array_talk(nums):
+    # narrate: builtin sum is implemented in C — faster than a Python loop
+    pass`,
+        fn: 'sum_array_talk',
+        solutions: [
+          { label: 'builtin', code: `def sum_array_talk(nums):
+    return sum(nums)` },
+          { label: 'manual loop', code: `def sum_array_talk(nums):
+    total = 0
+    for n in nums:
+        total += n
+    return total` },
+        ],
+        hints: [
+          "Out loud: 'Same complexity, O(n), but builtin sum has lower constant factors.'",
+          "'I'd still know the manual loop in case the interviewer wants it.'",
+        ],
+        cases: [ { args: [[1,2,3]], expected: 6 }, { args: [[]], expected: 0 }, { args: [[-1,1]], expected: 0 }, { args: [[100]], expected: 100 } ],
+      },
+      {
+        title: 'factorial narrated',
+        difficulty: 'easy',
+        prompt: 'Compute n! (n >= 0). Talk through recursion vs. iteration and the stack-depth risk.',
+        starter: `def factorial_talk(n):
+    # narrate: iterative avoids recursion depth limits
+    pass`,
+        fn: 'factorial_talk',
+        solutions: [
+          { label: 'iterative', code: `def factorial_talk(n):
+    result = 1
+    for i in range(2, n + 1):
+        result *= i
+    return result` },
+          { label: 'recursive', note: 'Mention it as a baseline; flag stack-depth risk.', code: `def factorial_talk(n):
+    return 1 if n < 2 else n * factorial_talk(n - 1)` },
+          { label: 'math.factorial', note: 'In real code, just call the builtin.', code: `import math
+
+def factorial_talk(n):
+    return math.factorial(n)` },
+        ],
+        hints: [
+          "Out loud: 'Recursive factorial is clean but can blow the stack for big n.'",
+          "'I'll go iterative for safety.'",
+        ],
+        cases: [ { args: [0], expected: 1 }, { args: [1], expected: 1 }, { args: [5], expected: 120 }, { args: [10], expected: 3628800 } ],
+      },
+      {
+        title: 'find duplicate narrated',
+        difficulty: 'easy',
+        prompt: 'Return any duplicate value in <code>nums</code>, or -1 if none. Narrate two approaches and pick one.',
+        starter: `def find_duplicate_talk(nums):
+    # narrate: sort O(n log n) vs hashset O(n) time and space
+    pass`,
+        fn: 'find_duplicate_talk',
+        solutions: [
+          { label: 'hashset', code: `def find_duplicate_talk(nums):
+    seen = set()
+    for n in nums:
+        if n in seen:
+            return n
+        seen.add(n)
+    return -1` },
+        ],
+        hints: [
+          "Out loud: 'Sorting is O(n log n) but no extra space (or O(n) if I can't mutate).'",
+          "'Hashset is O(n) time and O(n) space.'",
+          "'I'll pick hashset for speed unless memory is tight.'",
+        ],
+        cases: [ { args: [[1,2,3,1]], expected: 1 }, { args: [[1,2,3]], expected: -1 }, { args: [[]], expected: -1 }, { args: [[5,5]], expected: 5 } ],
       },
     ],
   },
