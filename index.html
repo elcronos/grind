@@ -336,6 +336,32 @@
     color: var(--ink);
     margin-bottom: 18px;
   }
+  .hints {
+    margin: -8px 0 16px;
+    padding: 10px 14px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--ink-dim);
+    font-size: 13px;
+  }
+  .hints summary {
+    cursor: pointer;
+    color: var(--acc);
+    font-weight: 600;
+    user-select: none;
+  }
+  .hints ol {
+    margin: 10px 0 0;
+    padding-left: 22px;
+  }
+  .hints li {
+    margin: 6px 0;
+    line-height: 1.5;
+  }
+  .hints code {
+    color: var(--acc-2);
+  }
   .editor-wrap {
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -783,6 +809,12 @@ const LESSONS = [
     # track running min price, max profit so far
     pass`,
         fn: 'max_profit',
+        hints: [
+          'You only need one pass through <code>prices</code>.',
+          'Track the lowest price seen so far in a variable like <code>min_price</code>.',
+          'At each day, compute <code>price - min_price</code> and update <code>best</code> if larger.',
+          'Edge case: empty list returns 0. Single price returns 0.',
+        ],
         cases: [
           { args: [[7,1,5,3,6,4]], expected: 5 },
           { args: [[7,6,4,3,1]], expected: 0 },
@@ -799,6 +831,12 @@ const LESSONS = [
     # write pointer for non-zeros, fill the rest with 0
     pass`,
         fn: 'move_zeros',
+        hints: [
+          'Two pointers: a <code>write</code> index for where the next non-zero goes.',
+          'First pass: copy every non-zero value to <code>nums[write]</code> and increment <code>write</code>.',
+          'Second pass: fill <code>nums[write:]</code> with zeros.',
+          'Preserves order without sorting. O(n) time, O(1) extra space.',
+        ],
         cases: [
           { args: [[0,1,0,3,12]], expected: [1,3,12,0,0] },
           { args: [[0]], expected: [0] },
@@ -907,6 +945,12 @@ const LESSONS = [
     # grow right, shrink left while sum >= target
     pass`,
         fn: 'min_subarray_len',
+        hints: [
+          'Use a sliding window with <code>left</code> and <code>right</code> indices and a running <code>window_sum</code>.',
+          'Expand by moving <code>right</code> and adding <code>nums[right]</code>.',
+          'Whenever <code>window_sum &gt;= target</code>, record window length and shrink from <code>left</code>.',
+          'If no window ever reaches target, return 0.',
+        ],
         cases: [
           { args: [7, [2,3,1,2,4,3]], expected: 2 },
           { args: [4, [1,4,4]], expected: 1 },
@@ -922,6 +966,12 @@ const LESSONS = [
     # window invariant: zero_count <= k
     pass`,
         fn: 'longest_ones',
+        hints: [
+          'Classic growing/shrinking window. Track <code>zero_count</code> inside the window.',
+          'Expand <code>right</code>; if <code>nums[right] == 0</code>, increment <code>zero_count</code>.',
+          'While <code>zero_count &gt; k</code>, shrink from <code>left</code> (decrement zero_count if you pass a 0).',
+          'Track <code>best = max(best, right - left + 1)</code> each step.',
+        ],
         cases: [
           { args: [[1,1,1,0,0,0,1,1,1,1,0], 2], expected: 6 },
           { args: [[0,0,1,1,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1], 3], expected: 10 },
@@ -1030,6 +1080,12 @@ sorted(words, key=<span class="tok-kw">lambda</span> w: (len(w), w))
     # classic lower_bound binary search
     pass`,
         fn: 'search_insert',
+        hints: [
+          'Standard binary search with <code>lo = 0</code>, <code>hi = len(nums)</code> (note: <code>len</code>, not <code>len-1</code>).',
+          'Loop while <code>lo &lt; hi</code>. Compute <code>mid = (lo + hi) // 2</code>.',
+          'If <code>nums[mid] &lt; target</code>: <code>lo = mid + 1</code>. Else: <code>hi = mid</code>.',
+          'Return <code>lo</code> — it is the insertion point.',
+        ],
         cases: [
           { args: [[1,3,5,6], 5], expected: 2 },
           { args: [[1,3,5,6], 2], expected: 1 },
@@ -1046,6 +1102,12 @@ sorted(words, key=<span class="tok-kw">lambda</span> w: (len(w), w))
     # binary search the largest m where m*m <= x
     pass`,
         fn: 'my_sqrt',
+        hints: [
+          'Binary search on the answer: range is <code>[0, x]</code>.',
+          'For each <code>mid</code>, check <code>mid * mid &lt;= x</code>. If yes, candidate; try larger.',
+          'Track the best candidate as you go. Return it at the end.',
+          'Watch overflow: Python ints are big, no issue. Edge cases: <code>x = 0</code>, <code>x = 1</code>.',
+        ],
         cases: [
           { args: [0], expected: 0 },
           { args: [1], expected: 1 },
@@ -1174,6 +1236,11 @@ sorted(words, key=<span class="tok-kw">lambda</span> w: (len(w), w))
     # recurse: both None? both equal val and subtrees match?
     pass`,
         fn: 'same_tree',
+        hints: [
+          'Recurse. Base: both <code>None</code> -&gt; True. One <code>None</code> -&gt; False.',
+          'Unpack <code>[val, left, right]</code> for both. If <code>val</code> differs, False.',
+          'Return <code>same_tree(p_left, q_left) and same_tree(p_right, q_right)</code>.',
+        ],
         cases: [
           { args: [[1, [2, null, null], [3, null, null]], [1, [2, null, null], [3, null, null]]], expected: true },
           { args: [[1, [2, null, null], null], [1, null, [2, null, null]]], expected: false },
@@ -1188,6 +1255,11 @@ sorted(words, key=<span class="tok-kw">lambda</span> w: (len(w), w))
         starter: `def count_nodes(root):
     pass`,
         fn: 'count_nodes',
+        hints: [
+          'Base case: <code>None</code> -&gt; 0.',
+          'Otherwise: <code>1 + count_nodes(left) + count_nodes(right)</code>.',
+          'Unpack with <code>val, left, right = root</code>.',
+        ],
         cases: [
           { args: [null], expected: 0 },
           { args: [[1, null, null]], expected: 1 },
@@ -1318,6 +1390,12 @@ graph = defaultdict(list)
     # bfs or dfs from (sr, sc); only flip cells matching original color
     pass`,
         fn: 'flood_fill',
+        hints: [
+          'Save the original color at <code>(sr, sc)</code> first — you will change it.',
+          'If <code>color == original</code>, return early (else infinite loop on equal colors).',
+          'BFS or DFS from the start; only enqueue cells that match the original color.',
+          'Bounds check before recursing/enqueuing: <code>0 &lt;= r &lt; rows</code>, same for cols.',
+        ],
         cases: [
           { args: [[[1,1,1],[1,1,0],[1,0,1]], 1, 1, 2], expected: [[2,2,2],[2,2,0],[2,0,1]] },
           { args: [[[0,0,0],[0,0,0]], 0, 0, 0], expected: [[0,0,0],[0,0,0]] },
@@ -1332,6 +1410,12 @@ graph = defaultdict(list)
     # dfs/bfs each unvisited 1, track max
     pass`,
         fn: 'max_area',
+        hints: [
+          'Iterate every cell. When you find a <code>1</code>, run DFS/BFS to count its component.',
+          'Mark visited by flipping the cell to <code>0</code> (or use a <code>visited</code> set).',
+          'Track <code>best = max(best, area)</code> after each search.',
+          'Only 4 directions: up, down, left, right.',
+        ],
         cases: [
           { args: [[[1,1,0,0],[1,0,0,1],[0,0,1,1],[0,0,0,1]]], expected: 3 },
           { args: [[[0,0,0],[0,0,0]]], expected: 0 },
@@ -1426,6 +1510,12 @@ graph = defaultdict(list)
     # hashmap of value -> True. O(n) time, O(n) space.
     pass`,
         fn: 'two_sum_fast',
+        hints: [
+          'One pass with a <code>set</code> (or dict) of values seen so far.',
+          'For each <code>n</code>, check if <code>target - n</code> is already in the set.',
+          'If yes, return <code>[target - n, n]</code>.',
+          'Otherwise add <code>n</code> to the set and keep going. Return <code>[]</code> if loop ends.',
+        ],
         cases: [
           { args: [[2,7,11,15], 9], expected: [2,7] },
           { args: [[3,2,4], 6], expected: [2,4] },
@@ -1441,6 +1531,12 @@ graph = defaultdict(list)
         starter: `def space_complexity_of(label):
     pass`,
         fn: 'space_complexity_of',
+        hints: [
+          'Recursive fib uses call stack proportional to <code>n</code>.',
+          'Iterative fib only keeps a couple of variables -&gt; constant.',
+          'Merge sort needs an auxiliary array of size <code>n</code>.',
+          'In-place reverse swaps in the same array -&gt; constant extra.',
+        ],
         cases: [
           { args: ['recursive_fib'], expected: 'O(n)' },
           { args: ['iterative_fib'], expected: 'O(1)' },
@@ -1548,6 +1644,11 @@ first, *rest = [<span class="tok-num">1</span>, <span class="tok-num">2</span>, 
     # Counter for frequencies, then find first index with count == 1
     pass`,
         fn: 'first_unique',
+        hints: [
+          'First pass: build <code>Counter(s)</code>.',
+          'Second pass: <code>for i, ch in enumerate(s)</code>; return <code>i</code> if <code>counter[ch] == 1</code>.',
+          'No match? Return <code>-1</code>.',
+        ],
         cases: [
           { args: ['leetcode'], expected: 0 },
           { args: ['loveleetcode'], expected: 2 },
@@ -1563,6 +1664,11 @@ first, *rest = [<span class="tok-num">1</span>, <span class="tok-num">2</span>, 
         starter: `def flatten(lists):
     pass`,
         fn: 'flatten',
+        hints: [
+          'Comprehension: <code>[x for sub in lists for x in sub]</code>.',
+          'Or <code>list(itertools.chain.from_iterable(lists))</code>.',
+          'Only flattens one level — that is the spec here.',
+        ],
         cases: [
           { args: [[[1,2],[3,4],[5]]], expected: [1,2,3,4,5] },
           { args: [[]], expected: [] },
@@ -1673,6 +1779,12 @@ first, *rest = [<span class="tok-num">1</span>, <span class="tok-num">2</span>, 
     # talk through: O(n) time, O(1) extra space
     pass`,
         fn: 'reverse_string',
+        hints: [
+          'Two pointers: <code>left = 0</code>, <code>right = len(s) - 1</code>.',
+          'While <code>left &lt; right</code>: swap <code>s[left], s[right] = s[right], s[left]</code>, then move both inward.',
+          'Return <code>s</code> at the end.',
+          'Talk-track: O(n) time, O(1) extra space because the list is mutated in place.',
+        ],
         cases: [
           { args: [['h','e','l','l','o']], expected: ['o','l','l','e','h'] },
           { args: [['a']], expected: ['a'] },
@@ -1838,6 +1950,7 @@ function renderChallenge(ch, key) {
     </div>
     <div class="challenge-body">
       <div class="challenge-prompt">${ch.prompt}</div>
+      ${ch.hints ? `<details class="hints"><summary>hints</summary><ol>${ch.hints.map(h => `<li>${h}</li>`).join('')}</ol></details>` : ''}
       <div class="editor-wrap">
         <div class="editor-tabbar">
           <div class="dots"><span></span><span></span><span></span></div>
