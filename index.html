@@ -775,6 +775,38 @@ const LESSONS = [
           { args: [[3,4,7,2,-3,1,4,2], 7], expected: 4 },
         ],
       },
+      {
+        title: 'best time to buy and sell stock',
+        difficulty: 'easy',
+        prompt: 'Given <code>prices</code> for each day, return the max profit from buying on one day and selling later. 0 if no profit possible.',
+        starter: `def max_profit(prices):
+    # track running min price, max profit so far
+    pass`,
+        fn: 'max_profit',
+        cases: [
+          { args: [[7,1,5,3,6,4]], expected: 5 },
+          { args: [[7,6,4,3,1]], expected: 0 },
+          { args: [[1,2]], expected: 1 },
+          { args: [[]], expected: 0 },
+          { args: [[3]], expected: 0 },
+        ],
+      },
+      {
+        title: 'move zeros to end',
+        difficulty: 'easy',
+        prompt: 'Move all zeros in <code>nums</code> to the end, keeping the order of non-zero elements. Return the modified list. O(n) two-pointer.',
+        starter: `def move_zeros(nums):
+    # write pointer for non-zeros, fill the rest with 0
+    pass`,
+        fn: 'move_zeros',
+        cases: [
+          { args: [[0,1,0,3,12]], expected: [1,3,12,0,0] },
+          { args: [[0]], expected: [0] },
+          { args: [[1,2,3]], expected: [1,2,3] },
+          { args: [[]], expected: [] },
+          { args: [[0,0,1]], expected: [1,0,0] },
+        ],
+      },
     ],
   },
   {
@@ -865,6 +897,36 @@ const LESSONS = [
           { args: [[2,3,4,1,5], 2], expected: 7 },
           { args: [[1,1,1,1,1], 3], expected: 3 },
           { args: [[5], 1], expected: 5 },
+        ],
+      },
+      {
+        title: 'min subarray sum >= target',
+        difficulty: 'medium',
+        prompt: 'Given positive integers <code>nums</code> and integer <code>target</code>, return the minimal length of a contiguous subarray whose sum is &gt;= <code>target</code>. Return 0 if none. Growing/shrinking window.',
+        starter: `def min_subarray_len(target, nums):
+    # grow right, shrink left while sum >= target
+    pass`,
+        fn: 'min_subarray_len',
+        cases: [
+          { args: [7, [2,3,1,2,4,3]], expected: 2 },
+          { args: [4, [1,4,4]], expected: 1 },
+          { args: [11, [1,1,1,1,1,1,1,1]], expected: 0 },
+          { args: [15, [1,2,3,4,5]], expected: 5 },
+        ],
+      },
+      {
+        title: 'longest ones (flip k zeros)',
+        difficulty: 'medium',
+        prompt: 'Given binary array <code>nums</code> and integer <code>k</code>, return the max length of a contiguous subarray with at most <code>k</code> zeros.',
+        starter: `def longest_ones(nums, k):
+    # window invariant: zero_count <= k
+    pass`,
+        fn: 'longest_ones',
+        cases: [
+          { args: [[1,1,1,0,0,0,1,1,1,1,0], 2], expected: 6 },
+          { args: [[0,0,1,1,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1], 3], expected: 10 },
+          { args: [[0,0,0], 0], expected: 0 },
+          { args: [[1,1,1], 0], expected: 3 },
         ],
       },
     ],
@@ -958,6 +1020,39 @@ sorted(words, key=<span class="tok-kw">lambda</span> w: (len(w), w))
           { firstBad: 1, n: 1, expected: 1 },
           { firstBad: 1702766719, n: 2126753390, expected: 1702766719 },
           { firstBad: 3, n: 10, expected: 3 },
+        ],
+      },
+      {
+        title: 'search insert position',
+        difficulty: 'easy',
+        prompt: 'Given a sorted array and a target, return the index where target is, or where it should be inserted to keep the array sorted. O(log n).',
+        starter: `def search_insert(nums, target):
+    # classic lower_bound binary search
+    pass`,
+        fn: 'search_insert',
+        cases: [
+          { args: [[1,3,5,6], 5], expected: 2 },
+          { args: [[1,3,5,6], 2], expected: 1 },
+          { args: [[1,3,5,6], 7], expected: 4 },
+          { args: [[1,3,5,6], 0], expected: 0 },
+          { args: [[], 1], expected: 0 },
+        ],
+      },
+      {
+        title: 'sqrt floor',
+        difficulty: 'medium',
+        prompt: 'Return <code>floor(sqrt(x))</code> for non-negative integer <code>x</code> using <strong>binary search on the answer</strong>. No <code>math.sqrt</code>.',
+        starter: `def my_sqrt(x):
+    # binary search the largest m where m*m <= x
+    pass`,
+        fn: 'my_sqrt',
+        cases: [
+          { args: [0], expected: 0 },
+          { args: [1], expected: 1 },
+          { args: [4], expected: 2 },
+          { args: [8], expected: 2 },
+          { args: [16], expected: 4 },
+          { args: [2147395599], expected: 46339 },
         ],
       },
     ],
@@ -1069,6 +1164,35 @@ sorted(words, key=<span class="tok-kw">lambda</span> w: (len(w), w))
             expected: [4, [7, [9, null, null], [6, null, null]], [2, [3, null, null], [1, null, null]]] },
           { args: [[2, [1, null, null], [3, null, null]]], expected: [2, [3, null, null], [1, null, null]] },
           { args: [null], expected: null },
+        ],
+      },
+      {
+        title: 'same tree',
+        difficulty: 'easy',
+        prompt: 'Return True if two trees are structurally identical with equal values at every node. Use the nested-list format.',
+        starter: `def same_tree(p, q):
+    # recurse: both None? both equal val and subtrees match?
+    pass`,
+        fn: 'same_tree',
+        cases: [
+          { args: [[1, [2, null, null], [3, null, null]], [1, [2, null, null], [3, null, null]]], expected: true },
+          { args: [[1, [2, null, null], null], [1, null, [2, null, null]]], expected: false },
+          { args: [null, null], expected: true },
+          { args: [[1, null, null], null], expected: false },
+        ],
+      },
+      {
+        title: 'count tree nodes',
+        difficulty: 'easy',
+        prompt: 'Return the total number of nodes in a binary tree. Same nested-list format.',
+        starter: `def count_nodes(root):
+    pass`,
+        fn: 'count_nodes',
+        cases: [
+          { args: [null], expected: 0 },
+          { args: [[1, null, null]], expected: 1 },
+          { args: [[3, [9, null, null], [20, [15, null, null], [7, null, null]]]], expected: 5 },
+          { args: [[1, [2, [4, null, null], null], [3, null, null]]], expected: 4 },
         ],
       },
     ],
@@ -1186,6 +1310,35 @@ graph = defaultdict(list)
           { args: [[[0]]], expected: 1 },
         ],
       },
+      {
+        title: 'flood fill',
+        difficulty: 'easy',
+        prompt: 'Given an image (2D grid of ints), a starting pixel <code>(sr, sc)</code>, and a <code>color</code>, change the starting pixel and all 4-connected pixels with the same original color to <code>color</code>. Return the image.',
+        starter: `def flood_fill(image, sr, sc, color):
+    # bfs or dfs from (sr, sc); only flip cells matching original color
+    pass`,
+        fn: 'flood_fill',
+        cases: [
+          { args: [[[1,1,1],[1,1,0],[1,0,1]], 1, 1, 2], expected: [[2,2,2],[2,2,0],[2,0,1]] },
+          { args: [[[0,0,0],[0,0,0]], 0, 0, 0], expected: [[0,0,0],[0,0,0]] },
+          { args: [[[1]], 0, 0, 9], expected: [[9]] },
+        ],
+      },
+      {
+        title: 'max area of island',
+        difficulty: 'medium',
+        prompt: 'Given a grid of 0s and 1s, return the area (cell count) of the largest island (4-connected). 0 if no islands.',
+        starter: `def max_area(grid):
+    # dfs/bfs each unvisited 1, track max
+    pass`,
+        fn: 'max_area',
+        cases: [
+          { args: [[[1,1,0,0],[1,0,0,1],[0,0,1,1],[0,0,0,1]]], expected: 3 },
+          { args: [[[0,0,0],[0,0,0]]], expected: 0 },
+          { args: [[[1]]], expected: 1 },
+          { args: [[[1,1],[1,1]]], expected: 4 },
+        ],
+      },
     ],
   },
   {
@@ -1263,6 +1416,36 @@ graph = defaultdict(list)
           { args: [[1,2,3,4]], expected: false },
           { args: [[]], expected: false },
           { args: [[1,1,1,3,3,4,3,2,4,2]], expected: true },
+        ],
+      },
+      {
+        title: 'optimize me — two sum',
+        difficulty: 'easy',
+        prompt: 'Brute force two-sum is O(n²). Make it O(n) using a single-pass hashmap. Return the two values that add up to <code>target</code> (any order), or <code>[]</code> if none.',
+        starter: `def two_sum_fast(nums, target):
+    # hashmap of value -> True. O(n) time, O(n) space.
+    pass`,
+        fn: 'two_sum_fast',
+        cases: [
+          { args: [[2,7,11,15], 9], expected: [2,7] },
+          { args: [[3,2,4], 6], expected: [2,4] },
+          { args: [[1,5,3], 100], expected: [] },
+          { args: [[-3,4,3,90], 0], expected: [-3,3] },
+        ],
+        normalize: 'sortPair',
+      },
+      {
+        title: 'space vs time tradeoff',
+        difficulty: 'easy',
+        prompt: 'Implement <code>space_complexity_of(label)</code>. Labels: <code>"recursive_fib"</code>, <code>"iterative_fib"</code>, <code>"merge_sort"</code>, <code>"in_place_reverse"</code>. Return one of: <code>"O(1)"</code>, <code>"O(log n)"</code>, <code>"O(n)"</code>.',
+        starter: `def space_complexity_of(label):
+    pass`,
+        fn: 'space_complexity_of',
+        cases: [
+          { args: ['recursive_fib'], expected: 'O(n)' },
+          { args: ['iterative_fib'], expected: 'O(1)' },
+          { args: ['merge_sort'], expected: 'O(n)' },
+          { args: ['in_place_reverse'], expected: 'O(1)' },
         ],
       },
     ],
@@ -1357,6 +1540,36 @@ first, *rest = [<span class="tok-num">1</span>, <span class="tok-num">2</span>, 
         ],
         normalize: 'sortArr',
       },
+      {
+        title: 'first unique char',
+        difficulty: 'easy',
+        prompt: 'Return the index of the first non-repeating character in <code>s</code>. Return -1 if none. <code>Counter</code> makes this one pass + one scan.',
+        starter: `def first_unique(s):
+    # Counter for frequencies, then find first index with count == 1
+    pass`,
+        fn: 'first_unique',
+        cases: [
+          { args: ['leetcode'], expected: 0 },
+          { args: ['loveleetcode'], expected: 2 },
+          { args: ['aabb'], expected: -1 },
+          { args: [''], expected: -1 },
+          { args: ['z'], expected: 0 },
+        ],
+      },
+      {
+        title: 'flatten nested list',
+        difficulty: 'easy',
+        prompt: 'Flatten one level of nesting. Given a list of lists, return a single flat list. One-liner with a comprehension or <code>itertools.chain</code>.',
+        starter: `def flatten(lists):
+    pass`,
+        fn: 'flatten',
+        cases: [
+          { args: [[[1,2],[3,4],[5]]], expected: [1,2,3,4,5] },
+          { args: [[]], expected: [] },
+          { args: [[[],[1],[]]], expected: [1] },
+          { args: [[[1]]], expected: [1] },
+        ],
+      },
     ],
   },
   {
@@ -1449,6 +1662,22 @@ first, *rest = [<span class="tok-num">1</span>, <span class="tok-num">2</span>, 
           { args: ['{[]}'], expected: true },
           { args: [''], expected: true },
           { args: ['('], expected: false },
+        ],
+      },
+      {
+        title: 'reverse string narrated',
+        difficulty: 'easy',
+        prompt: 'Reverse a list of characters in place and return it. While you code, narrate: why two pointers, why in-place beats slicing for memory, complexity.',
+        starter: `def reverse_string(s):
+    # two pointers, swap inward, then return s
+    # talk through: O(n) time, O(1) extra space
+    pass`,
+        fn: 'reverse_string',
+        cases: [
+          { args: [['h','e','l','l','o']], expected: ['o','l','l','e','h'] },
+          { args: [['a']], expected: ['a'] },
+          { args: [[]], expected: [] },
+          { args: [['a','b']], expected: ['b','a'] },
         ],
       },
     ],
